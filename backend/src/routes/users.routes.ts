@@ -12,7 +12,7 @@ router.use(authMiddleware);
 // Get all users (admin/manager only)
 router.get('/', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: Response) => {
   try {
-    const users = db.prepare('SELECT id, username, email, role, full_name, created_at FROM users').all();
+    const users = db.prepare('SELECT id, username, email, role, sub_role, full_name, created_at FROM users').all();
     res.json(users);
   } catch (error) {
     console.error('Get users error:', error);
@@ -23,7 +23,7 @@ router.get('/', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: Resp
 // Get user by ID
 router.get('/:id', (req: AuthRequest, res: Response) => {
   try {
-    const user = db.prepare('SELECT id, username, email, role, full_name, created_at FROM users WHERE id = ?').get(req.params.id);
+    const user = db.prepare('SELECT id, username, email, role, sub_role, full_name, created_at FROM users WHERE id = ?').get(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -50,14 +50,14 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password, role, full_name } = req.body;
+    const { username, email, password, role, sub_role, full_name } = req.body;
 
     try {
       const hashedPassword = bcrypt.hashSync(password, 10);
       const result = db.prepare(`
-        INSERT INTO users (username, email, password, role, full_name)
-        VALUES (?, ?, ?, ?, ?)
-      `).run(username, email, hashedPassword, role, full_name || null);
+        INSERT INTO users (username, email, password, role, sub_role, full_name)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(username, email, hashedPassword, role, sub_role || null, full_name || null);
 
       res.status(201).json({ id: result.lastInsertRowid, message: 'User created successfully' });
     } catch (error: any) {
@@ -79,7 +79,7 @@ router.put('/:id', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  const { email, full_name, password } = req.body;
+  const { email, full_name, password, role, sub_role } = req.body;
 
   try {
     const updates: string[] = [];
@@ -89,13 +89,23 @@ router.put('/:id', (req: AuthRequest, res: Response) => {
       updates.push('email = ?');
       values.push(email);
     }
-    if (full_name) {
+    if (full_name !== undefined) {
       updates.push('full_name = ?');
       values.push(full_name);
     }
     if (password) {
       updates.push('password = ?');
       values.push(bcrypt.hashSync(password, 10));
+    }
+    // Only admin can update role
+    if (role && req.user!.role === 'admin') {
+      updates.push('role = ?');
+      values.push(role);
+    }
+    // Only admin can update sub_role
+    if (sub_role !== undefined && req.user!.role === 'admin') {
+      updates.push('sub_role = ?');
+      values.push(sub_role);
     }
 
     if (updates.length === 0) {

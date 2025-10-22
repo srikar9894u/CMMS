@@ -13,6 +13,7 @@ import workOrderRoutes from './routes/workorders.routes';
 import preventiveRoutes from './routes/preventive.routes';
 import inventoryRoutes from './routes/inventory.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import leaveRoutes from './routes/leave.routes';
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +48,7 @@ app.use('/api/work-orders', workOrderRoutes);
 app.use('/api/preventive-maintenance', preventiveRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/leave', leaveRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -124,6 +124,43 @@ export const initDatabase = () => {
     )
   `);
 
+  // Leave Requests table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS leave_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL,
+      leave_type TEXT NOT NULL CHECK(leave_type IN ('vacation', 'sick', 'personal', 'other')),
+      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+      reason TEXT,
+      approved_by INTEGER,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (approved_by) REFERENCES users(id)
+    )
+  `);
+
+  // Migration: Add sub_role column to users table if it doesn't exist
+  const columns = db.prepare("PRAGMA table_info(users)").all() as any[];
+  const hasSubRole = columns.some((col: any) => col.name === 'sub_role');
+
+  if (!hasSubRole) {
+    db.exec(`ALTER TABLE users ADD COLUMN sub_role TEXT CHECK(sub_role IN ('electrical', 'mechanical', NULL))`);
+    console.log('Added sub_role column to users table');
+  }
+
+  // Migration: Add pm_schedule_id column to work_orders table if it doesn't exist
+  const woColumns = db.prepare("PRAGMA table_info(work_orders)").all() as any[];
+  const hasPmScheduleId = woColumns.some((col: any) => col.name === 'pm_schedule_id');
+
+  if (!hasPmScheduleId) {
+    db.exec(`ALTER TABLE work_orders ADD COLUMN pm_schedule_id INTEGER REFERENCES preventive_maintenance(id)`);
+    console.log('Added pm_schedule_id column to work_orders table');
+  }
+
   // Create default admin user if users table is empty
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   if (userCount.count === 0) {

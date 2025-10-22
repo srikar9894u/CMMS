@@ -134,10 +134,14 @@ router.put('/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: R
 
 // Adjust inventory quantity
 router.post('/:id/adjust', roleMiddleware('admin', 'manager', 'technician'), (req: AuthRequest, res: Response) => {
-  const { adjustment, notes } = req.body;
+  const { quantity, adjustment_type, notes } = req.body;
 
-  if (typeof adjustment !== 'number') {
-    return res.status(400).json({ error: 'Adjustment must be a number' });
+  if (!quantity || typeof quantity !== 'number') {
+    return res.status(400).json({ error: 'Quantity must be a number' });
+  }
+
+  if (!adjustment_type || !['add', 'remove', 'set'].includes(adjustment_type)) {
+    return res.status(400).json({ error: 'Invalid adjustment type' });
   }
 
   try {
@@ -146,9 +150,18 @@ router.post('/:id/adjust', roleMiddleware('admin', 'manager', 'technician'), (re
       return res.status(404).json({ error: 'Inventory item not found' });
     }
 
-    const newQuantity = item.quantity + adjustment;
+    let newQuantity: number;
+
+    if (adjustment_type === 'add') {
+      newQuantity = item.quantity + quantity;
+    } else if (adjustment_type === 'remove') {
+      newQuantity = item.quantity - quantity;
+    } else { // set
+      newQuantity = quantity;
+    }
+
     if (newQuantity < 0) {
-      return res.status(400).json({ error: 'Insufficient quantity' });
+      return res.status(400).json({ error: 'Insufficient quantity. Cannot reduce below 0.' });
     }
 
     db.prepare(`
