@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useTheme } from '../context/ThemeContext';
 
 interface DashboardStats {
   assets: {
@@ -27,6 +28,7 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
+  const { themeColors } = useTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,100 +48,100 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className={themeColors.colors.textPrimary}>Loading...</div>;
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${themeColors.colors.textPrimary} mb-6 sm:mb-8`}>Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Assets Card */}
-        <div className="card">
+        <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm p-4 sm:p-6 transition-all ${themeColors.colors.cardHover}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Assets</h3>
-            <span className="text-3xl">🏗️</span>
+            <h3 className={`text-base sm:text-lg font-semibold ${themeColors.colors.textSecondary}`}>Assets</h3>
+            <span className="text-2xl sm:text-3xl">🏗️</span>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl font-bold text-gray-900">{stats?.assets.total || 0}</div>
-            <div className="flex justify-between text-sm">
-              <span className="text-green-600">✓ Operational: {stats?.assets.operational || 0}</span>
+            <div className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>{stats?.assets.total || 0}</div>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.successText}>✓ Operational: {stats?.assets.operational || 0}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-red-600">✗ Down: {stats?.assets.down || 0}</span>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.errorText}>✗ Down: {stats?.assets.down || 0}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-yellow-600">⚙ Maintenance: {stats?.assets.maintenance || 0}</span>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.warningText}>⚙ Maintenance: {stats?.assets.maintenance || 0}</span>
             </div>
           </div>
         </div>
 
         {/* Work Orders Card */}
-        <div className="card">
+        <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm p-4 sm:p-6 transition-all ${themeColors.colors.cardHover}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Work Orders</h3>
-            <span className="text-3xl">🔧</span>
+            <h3 className={`text-base sm:text-lg font-semibold ${themeColors.colors.textSecondary}`}>Work Orders</h3>
+            <span className="text-2xl sm:text-3xl">🔧</span>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl font-bold text-gray-900">{stats?.work_orders.total || 0}</div>
-            <div className="flex justify-between text-sm">
-              <span className="text-blue-600">Open: {stats?.work_orders.open || 0}</span>
+            <div className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>{stats?.work_orders.total || 0}</div>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.infoText}>Open: {stats?.work_orders.open || 0}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-yellow-600">In Progress: {stats?.work_orders.in_progress || 0}</span>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.warningText}>In Progress: {stats?.work_orders.in_progress || 0}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-red-600">Urgent: {stats?.work_orders.urgent || 0}</span>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.errorText}>Urgent: {stats?.work_orders.urgent || 0}</span>
             </div>
           </div>
         </div>
 
         {/* Preventive Maintenance Card */}
-        <div className="card">
+        <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm p-4 sm:p-6 transition-all ${themeColors.colors.cardHover}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Preventive Maint.</h3>
-            <span className="text-3xl">⚙️</span>
+            <h3 className={`text-base sm:text-lg font-semibold ${themeColors.colors.textSecondary}`}>Preventive Maint.</h3>
+            <span className="text-2xl sm:text-3xl">⚙️</span>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl font-bold text-gray-900">{stats?.preventive_maintenance.total || 0}</div>
-            <div className="flex justify-between text-sm">
-              <span className="text-red-600">Overdue: {stats?.preventive_maintenance.overdue || 0}</span>
+            <div className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>{stats?.preventive_maintenance.total || 0}</div>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.errorText}>Overdue: {stats?.preventive_maintenance.overdue || 0}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-yellow-600">Due Soon: {stats?.preventive_maintenance.due_soon || 0}</span>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.warningText}>Due Soon: {stats?.preventive_maintenance.due_soon || 0}</span>
             </div>
           </div>
         </div>
 
         {/* Inventory Card */}
-        <div className="card">
+        <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm p-4 sm:p-6 transition-all ${themeColors.colors.cardHover}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Inventory</h3>
-            <span className="text-3xl">📦</span>
+            <h3 className={`text-base sm:text-lg font-semibold ${themeColors.colors.textSecondary}`}>Inventory</h3>
+            <span className="text-2xl sm:text-3xl">📦</span>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl font-bold text-gray-900">{stats?.inventory.total || 0}</div>
-            <div className="flex justify-between text-sm">
-              <span className="text-red-600">Low Stock: {stats?.inventory.low_stock || 0}</span>
+            <div className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>{stats?.inventory.total || 0}</div>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className={themeColors.colors.errorText}>Low Stock: {stats?.inventory.low_stock || 0}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <a href="/work-orders" className="btn btn-primary text-center">
+      <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm p-4 sm:p-6`}>
+        <h2 className={`text-lg sm:text-xl font-semibold ${themeColors.colors.textPrimary} mb-4`}>Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <a href="/work-orders" className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-3 rounded-lg text-center font-medium transition-colors text-sm sm:text-base`}>
             New Work Order
           </a>
-          <a href="/assets" className="btn btn-secondary text-center">
+          <a href="/assets" className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} ${themeColors.colors.secondaryText} px-4 py-3 rounded-lg text-center font-medium transition-colors text-sm sm:text-base`}>
             View Assets
           </a>
-          <a href="/preventive-maintenance" className="btn btn-secondary text-center">
+          <a href="/preventive-maintenance" className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} ${themeColors.colors.secondaryText} px-4 py-3 rounded-lg text-center font-medium transition-colors text-sm sm:text-base`}>
             PM Schedule
           </a>
-          <a href="/inventory" className="btn btn-secondary text-center">
+          <a href="/inventory" className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} ${themeColors.colors.secondaryText} px-4 py-3 rounded-lg text-center font-medium transition-colors text-sm sm:text-base`}>
             Check Inventory
           </a>
         </div>

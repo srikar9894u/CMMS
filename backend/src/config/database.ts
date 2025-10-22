@@ -146,10 +146,16 @@ export const initDatabase = () => {
   // Migration: Add sub_role column to users table if it doesn't exist
   const columns = db.prepare("PRAGMA table_info(users)").all() as any[];
   const hasSubRole = columns.some((col: any) => col.name === 'sub_role');
+  const hasTheme = columns.some((col: any) => col.name === 'theme');
 
   if (!hasSubRole) {
     db.exec(`ALTER TABLE users ADD COLUMN sub_role TEXT CHECK(sub_role IN ('electrical', 'mechanical', NULL))`);
     console.log('Added sub_role column to users table');
+  }
+
+  if (!hasTheme) {
+    db.exec(`ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'light' CHECK(theme IN ('light', 'dark', 'blue', 'green', 'purple'))`);
+    console.log('Added theme column to users table');
   }
 
   // Migration: Add pm_schedule_id column to work_orders table if it doesn't exist

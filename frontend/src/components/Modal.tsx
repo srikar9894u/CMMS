@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+  const { themeColors } = useTheme();
+
   if (!isOpen) return null;
 
   return (
@@ -15,7 +18,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
         <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+          className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50"
           onClick={onClose}
         ></div>
 
@@ -23,13 +26,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div className={`inline-block align-bottom ${themeColors.colors.card} rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full w-full max-w-full mx-2 sm:mx-auto`}>
+          <div className={`${themeColors.colors.card} px-4 pt-5 pb-4 sm:p-6 sm:pb-4`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+              <h3 className={`text-lg sm:text-xl font-medium ${themeColors.colors.textPrimary}`}>{title}</h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500"
+                className={`${themeColors.colors.textMuted} hover:${themeColors.colors.textPrimary} transition-colors`}
               >
                 <span className="text-2xl">&times;</span>
               </button>

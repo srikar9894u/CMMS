@@ -12,7 +12,7 @@ router.use(authMiddleware);
 // Get all users (admin/manager only)
 router.get('/', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: Response) => {
   try {
-    const users = db.prepare('SELECT id, username, email, role, sub_role, full_name, created_at FROM users').all();
+    const users = db.prepare('SELECT id, username, email, role, sub_role, theme, full_name, created_at FROM users').all();
     res.json(users);
   } catch (error) {
     console.error('Get users error:', error);
@@ -23,7 +23,7 @@ router.get('/', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: Resp
 // Get user by ID
 router.get('/:id', (req: AuthRequest, res: Response) => {
   try {
-    const user = db.prepare('SELECT id, username, email, role, sub_role, full_name, created_at FROM users WHERE id = ?').get(req.params.id);
+    const user = db.prepare('SELECT id, username, email, role, sub_role, theme, full_name, created_at FROM users WHERE id = ?').get(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -79,7 +79,7 @@ router.put('/:id', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  const { email, full_name, password, role, sub_role } = req.body;
+  const { email, full_name, password, role, sub_role, theme } = req.body;
 
   try {
     const updates: string[] = [];
@@ -106,6 +106,11 @@ router.put('/:id', (req: AuthRequest, res: Response) => {
     if (sub_role !== undefined && req.user!.role === 'admin') {
       updates.push('sub_role = ?');
       values.push(sub_role);
+    }
+    // Users can update their own theme
+    if (theme !== undefined) {
+      updates.push('theme = ?');
+      values.push(theme);
     }
 
     if (updates.length === 0) {

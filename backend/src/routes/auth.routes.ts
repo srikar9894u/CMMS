@@ -43,6 +43,7 @@ router.post(
           email: user.email,
           role: user.role,
           full_name: user.full_name,
+          theme: user.theme || 'light',
         },
       });
     } catch (error) {
@@ -55,7 +56,7 @@ router.post(
 // Get current user
 router.get('/me', authMiddleware, (req: AuthRequest, res: Response) => {
   try {
-    const user = db.prepare('SELECT id, username, email, role, full_name FROM users WHERE id = ?').get(req.user!.id);
+    const user = db.prepare('SELECT id, username, email, role, theme, full_name FROM users WHERE id = ?').get(req.user!.id);
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);

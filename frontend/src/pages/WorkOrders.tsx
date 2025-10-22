@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from '../components/Modal';
+import { useTheme } from '../context/ThemeContext';
 
 interface WorkOrder {
   id: number;
@@ -24,23 +25,8 @@ interface User {
   full_name: string;
 }
 
-const priorityColors: Record<string, string> = {
-  low: 'bg-blue-100 text-blue-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-orange-100 text-orange-800',
-  urgent: 'bg-red-100 text-red-800',
-};
-
-const statusColors: Record<string, string> = {
-  open: 'bg-blue-100 text-blue-800',
-  assigned: 'bg-purple-100 text-purple-800',
-  in_progress: 'bg-yellow-100 text-yellow-800',
-  on_hold: 'bg-gray-100 text-gray-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-};
-
 const WorkOrders = () => {
+  const { themeColors } = useTheme();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -64,6 +50,22 @@ const WorkOrders = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const priorityColors: Record<string, string> = {
+    low: themeColors.colors.infoLight,
+    medium: themeColors.colors.warningLight,
+    high: 'bg-orange-100 text-orange-800',
+    urgent: themeColors.colors.errorLight,
+  };
+
+  const statusColors: Record<string, string> = {
+    open: themeColors.colors.infoLight,
+    assigned: 'bg-purple-100 text-purple-800',
+    in_progress: themeColors.colors.warningLight,
+    on_hold: themeColors.colors.badgeRetired,
+    completed: themeColors.colors.successLight,
+    cancelled: themeColors.colors.errorLight,
+  };
 
   useEffect(() => {
     fetchWorkOrders();
@@ -224,33 +226,39 @@ const WorkOrders = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className={themeColors.colors.textPrimary}>Loading...</div>;
   }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Work Orders</h1>
-        <button onClick={openAddModal} className="btn btn-primary">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+        <h1 className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>Work Orders</h1>
+        <button onClick={openAddModal} className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-2 rounded-lg font-medium transition-colors`}>
           + New Work Order
         </button>
       </div>
 
       {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className={`mb-4 ${themeColors.colors.successLight} border ${themeColors.colors.successText} px-4 py-3 rounded-lg text-sm`}>
           {success}
         </div>
       )}
 
+      {error && (
+        <div className={`mb-4 ${themeColors.colors.errorLight} border ${themeColors.colors.errorText} px-4 py-3 rounded-lg text-sm`}>
+          {error}
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="card mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm p-4 sm:p-6 mb-6`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>Status</label>
             <select
               value={filter.status}
               onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-              className="input"
+              className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
             >
               <option value="">All Statuses</option>
               <option value="open">Open</option>
@@ -258,14 +266,15 @@ const WorkOrders = () => {
               <option value="in_progress">In Progress</option>
               <option value="on_hold">On Hold</option>
               <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>Priority</label>
             <select
               value={filter.priority}
               onChange={(e) => setFilter({ ...filter, priority: e.target.value })}
-              className="input"
+              className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
             >
               <option value="">All Priorities</option>
               <option value="low">Low</option>
@@ -278,101 +287,81 @@ const WorkOrders = () => {
       </div>
 
       {/* Work Orders Table */}
-      <div className="card overflow-hidden p-0">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asset</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned To</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {workOrders.map((wo) => (
-              <tr key={wo.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #{wo.id}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">{wo.title}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{wo.asset_name || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{wo.work_type}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`badge ${priorityColors[wo.priority]}`}>
-                    {wo.priority}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`badge ${statusColors[wo.status]}`}>
-                    {wo.status.replace('_', ' ')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {wo.assigned_to_name || 'Unassigned'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {deleteConfirm === wo.id ? (
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleDelete(wo.id)}
-                        className="text-red-600 hover:text-red-900 font-medium"
-                      >
-                        Confirm
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(null)}
-                        className="text-gray-600 hover:text-gray-900"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col space-y-1">
+      <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm overflow-hidden`}>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y">
+            <thead className={`${themeColors.colors.secondary}`}>
+              <tr>
+                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Title</th>
+                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden md:table-cell`}>Asset</th>
+                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Priority</th>
+                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Status</th>
+                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden lg:table-cell`}>Assigned To</th>
+                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Actions</th>
+              </tr>
+            </thead>
+            <tbody className={`${themeColors.colors.card} divide-y ${themeColors.colors.borderLight}`}>
+              {workOrders.map((wo) => (
+                <tr key={wo.id} className={themeColors.colors.cardHover}>
+                  <td className={`px-4 sm:px-6 py-4 text-sm font-medium ${themeColors.colors.textPrimary}`}>
+                    <div className="max-w-xs truncate">{wo.title}</div>
+                  </td>
+                  <td className={`px-4 sm:px-6 py-4 text-sm ${themeColors.colors.textMuted} hidden md:table-cell`}>
+                    {wo.asset_name || '-'}
+                  </td>
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${priorityColors[wo.priority]}`}>
+                      {wo.priority}
+                    </span>
+                  </td>
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[wo.status]}`}>
+                      {wo.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td className={`px-4 sm:px-6 py-4 text-sm ${themeColors.colors.textMuted} hidden lg:table-cell`}>
+                    {wo.assigned_to_name || 'Unassigned'}
+                  </td>
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                    {deleteConfirm === wo.id ? (
                       <div className="flex items-center space-x-2">
                         <button
+                          onClick={() => handleDelete(wo.id)}
+                          className={`${themeColors.colors.errorText} font-medium`}
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(null)}
+                          className={themeColors.colors.textMuted}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <button
                           onClick={() => handleEdit(wo)}
-                          className="text-primary-600 hover:text-primary-900"
+                          className={themeColors.colors.primaryText}
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(wo.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className={themeColors.colors.errorText}
                         >
                           Delete
                         </button>
                       </div>
-                      {wo.status !== 'completed' && wo.status !== 'cancelled' && (
-                        <div className="flex items-center space-x-2">
-                          {wo.status !== 'in_progress' && (
-                            <button
-                              onClick={() => handleStatusUpdate(wo.id, 'in_progress')}
-                              className="text-yellow-600 hover:text-yellow-900 text-xs"
-                            >
-                              Start
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleStatusUpdate(wo.id, 'completed')}
-                            className="text-green-600 hover:text-green-900 text-xs"
-                          >
-                            Complete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {workOrders.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className={`text-center py-12 ${themeColors.colors.textMuted}`}>
             No work orders found. Click "New Work Order" to create one.
           </div>
         )}
@@ -386,35 +375,53 @@ const WorkOrders = () => {
           setIsEditMode(false);
           setEditingId(null);
         }}
-        title={isEditMode ? "Edit Work Order" : "Create New Work Order"}
+        title={isEditMode ? "Edit Work Order" : "New Work Order"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className={`${themeColors.colors.errorLight} border ${themeColors.colors.errorText} px-4 py-3 rounded-lg text-sm`}>
               {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="input"
-              required
-              placeholder="Brief description of the work"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>
+                Title <span className={themeColors.colors.errorText}>*</span>
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                required
+              />
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>
+                Description <span className={themeColors.colors.errorText}>*</span>
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={3}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                required
+              />
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Asset</label>
-              <select name="asset_id" value={formData.asset_id} onChange={handleChange} className="input">
-                <option value="">No asset selected</option>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Asset</label>
+              <select
+                name="asset_id"
+                value={formData.asset_id}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              >
+                <option value="">Select Asset</option>
                 {assets.map((asset) => (
                   <option key={asset.id} value={asset.id}>
                     {asset.name}
@@ -424,8 +431,63 @@ const WorkOrders = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-              <select name="assigned_to" value={formData.assigned_to} onChange={handleChange} className="input">
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Work Type</label>
+              <select
+                name="work_type"
+                value={formData.work_type}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              >
+                <option value="corrective">Corrective</option>
+                <option value="preventive">Preventive</option>
+                <option value="inspection">Inspection</option>
+                <option value="emergency">Emergency</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>
+                Priority <span className={themeColors.colors.errorText}>*</span>
+              </label>
+              <select
+                name="priority"
+                value={formData.priority}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                required
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Status</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              >
+                <option value="open">Open</option>
+                <option value="assigned">Assigned</option>
+                <option value="in_progress">In Progress</option>
+                <option value="on_hold">On Hold</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Assign To</label>
+              <select
+                name="assigned_to"
+                value={formData.assigned_to}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              >
                 <option value="">Unassigned</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
@@ -436,80 +498,42 @@ const WorkOrders = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Work Type <span className="text-red-500">*</span>
-              </label>
-              <select name="work_type" value={formData.work_type} onChange={handleChange} className="input" required>
-                <option value="corrective">Corrective</option>
-                <option value="preventive">Preventive</option>
-                <option value="inspection">Inspection</option>
-                <option value="project">Project</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Priority <span className="text-red-500">*</span>
-              </label>
-              <select name="priority" value={formData.priority} onChange={handleChange} className="input" required>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Hours</label>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Estimated Hours</label>
               <input
                 type="number"
+                step="0.5"
                 name="estimated_hours"
                 value={formData.estimated_hours}
                 onChange={handleChange}
-                className="input"
-                step="0.5"
-                min="0"
-                placeholder="Hours"
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Scheduled Date</label>
               <input
-                type="datetime-local"
+                type="date"
                 name="scheduled_date"
                 value={formData.scheduled_date}
                 onChange={handleChange}
-                className="input"
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>Notes</label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={2}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                placeholder="Additional notes"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="input"
-              placeholder="Detailed description of the work to be done"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              rows={2}
-              className="input"
-              placeholder="Additional notes or instructions"
-            />
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={() => {
@@ -517,11 +541,11 @@ const WorkOrders = () => {
                 setIsEditMode(false);
                 setEditingId(null);
               }}
-              className="btn btn-secondary"
+              className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} ${themeColors.colors.secondaryText} px-4 py-2 rounded-lg font-medium transition-colors`}
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-2 rounded-lg font-medium transition-colors`}>
               {isEditMode ? 'Update Work Order' : 'Create Work Order'}
             </button>
           </div>
