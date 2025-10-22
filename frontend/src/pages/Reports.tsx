@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Reports = () => {
   const [stats, setStats] = useState<any>(null);
@@ -177,7 +177,7 @@ const Reports = () => {
                 fill="#8884d8"
                 dataKey="count"
               >
-                {workOrderPriorityData.map((entry: any, index: number) => (
+                {workOrderPriorityData.map((_entry: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

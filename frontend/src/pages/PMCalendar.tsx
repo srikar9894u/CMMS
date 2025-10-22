@@ -76,17 +76,6 @@ const PMCalendar = () => {
     return weekIndex >= 0 ? weekIndex + 1 : null;
   };
 
-  // Color coding based on frequency
-  const getFrequencyColor = (frequency: string) => {
-    switch (frequency) {
-      case 'weekly': return 'bg-blue-500';
-      case 'monthly': return 'bg-green-500';
-      case 'quarterly': return 'bg-yellow-500';
-      case 'yearly': return 'bg-purple-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
   // Calculate if task is overdue
   const isOverdue = (nextDue: string) => {
     return new Date(nextDue) < new Date();
