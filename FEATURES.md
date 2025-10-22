@@ -90,9 +90,14 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Spot due-soon tasks (yellow highlighting)
   - Complete tasks with automatic rescheduling
   - Actions column with Edit/Delete/Complete/Activate/Deactivate buttons
-- **Automation**
+- **Automation** 🤖
   - Auto-calculate next due date based on frequency
   - Automatic reschedule after completion
+  - **Auto Work Order Creation**: Generate work orders automatically from PM schedules
+  - **Intelligent Auto-Assignment**: Assign work orders based on technician sub-role
+  - **Workload Balancing**: Distribute work evenly across available technicians
+  - **Leave Integration**: Automatically exclude technicians on leave from assignment
+  - Ensures maintenance continuity even with staff absences
 
 ### 5. **52-Week PPM Calendar** 📅 ⭐ *Featured*
 - **Quarterly Visual Layout**
@@ -206,12 +211,65 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - **Manager**: Manage assets, work orders, PM, inventory
   - **Technician**: Update work orders, view information
   - **Viewer**: Read-only access to all modules
+- **Technician Specialization** 🔧
+  - **Sub-Role Field**: Electrical or Mechanical specialization
+  - Used for intelligent work order auto-assignment
+  - Matches technician expertise to PM task requirements
+  - Ensures qualified technicians are assigned to appropriate tasks
+  - Improves maintenance quality and efficiency
 - **User Interface**
   - List all users with detailed information
   - Color-coded role badges
+  - Sub-role display for technicians
   - Actions column with Edit/Delete buttons
   - Creation date tracking
   - Cannot delete own account while logged in
+
+### 9. **Leave Management** 🏖️ ⭐ *Featured*
+- **Leave Request System**
+  - ✅ Create leave requests with date range selection
+  - Request types: Vacation, Sick, Personal, Other
+  - Start date and end date picker
+  - Automatic duration calculation (number of days)
+  - Optional notes for context
+  - Easy-to-use request form
+- **Leave Types** 📋
+  - **Vacation**: Planned time off for holidays
+  - **Sick**: Medical leave and health-related absences
+  - **Personal**: Personal matters and family obligations
+  - **Other**: Miscellaneous leave types (training, bereavement, etc.)
+- **Approval Workflow** ✅
+  - Manager and Admin approval capability
+  - Quick approve/reject buttons
+  - Single-click approval process
+  - Confirmation dialogs for decisions
+  - Status updates in real-time
+- **Leave Status Tracking** 📊
+  - **Pending**: Awaiting manager/admin review (yellow badge)
+  - **Approved**: Leave accepted and confirmed (green badge)
+  - **Rejected**: Leave request denied (red badge)
+  - Color-coded status badges for quick identification
+  - Full visibility of all leave requests in one table
+- **Role-Based Visibility** 👁️
+  - **Technicians**: View own leave requests only
+  - **Managers/Admins**: View all leave requests system-wide
+  - Approve or reject requests from team members
+  - Cannot approve own leave requests
+  - Filter by status (All, Pending, Approved, Rejected)
+- **Integration with Auto-Assignment** 🔗
+  - Technicians on approved leave automatically excluded from work order assignment
+  - System checks leave dates against work order schedules
+  - Ensures work orders aren't assigned to unavailable staff
+  - Prevents scheduling conflicts and missed assignments
+  - Maintains operational continuity during absences
+  - Workload automatically redistributed to available technicians
+- **Leave Details Display**
+  - User name and leave type
+  - Date range with duration (number of days)
+  - Status with color-coded badges
+  - Optional notes for context
+  - Requested date timestamp
+  - Approval/rejection action buttons (for managers/admins)
 
 ---
 
@@ -369,12 +427,17 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
 | `/inventory` | Inventory Management | Authenticated |
 | `/reports` | Reports & Analytics | Authenticated |
 | `/users` | User Management | Admin/Manager |
+| `/leave` | Leave Management | Authenticated |
 
 ---
 
 ## 🎯 Key Achievements
 
 ✅ **Complete CRUD operations** for all entities (Create, Read, Update, Delete)
+✅ **Leave management system** with approval workflow and auto-assignment integration
+✅ **Auto work order creation** from PM schedules with intelligent assignment
+✅ **Technician specialization** with sub-role based assignment (Electrical/Mechanical)
+✅ **Workload balancing** with leave consideration for fair task distribution
 ✅ **Edit/Delete with confirmation** dialogs on all modules
 ✅ **Stock adjustment** feature for quick inventory updates
 ✅ **Work order status management** with Start/Complete buttons
@@ -422,9 +485,10 @@ While the system is feature-complete, potential enhancements include:
 - Advanced forecasting analytics
 - Multi-site support
 - IoT sensor integration
-- Automated work order generation from PM schedules
 - Advanced reporting exports (actual PDF/Excel generation)
 - Audit logs and activity history
+- Calendar integration for leave management
+- Mobile notifications for work order assignments
 
 ---
 
@@ -462,7 +526,11 @@ While the system is feature-complete, potential enhancements include:
 This CMMS system is a **production-ready, feature-complete maintenance management solution** designed for local LAN deployment. It includes all essential CMMS functionality plus advanced features like:
 
 - **Complete CRUD operations on all modules** ✏️🗑️
-- **Quick action buttons** (Start, Complete, Activate, Deactivate, Adjust Stock)
+- **Leave management with approval workflow** 🏖️
+- **Intelligent auto-assignment with workload balancing** 🤖
+- **Technician specialization (sub-roles)** 🔧
+- **Auto work order creation from PM schedules** ⚙️
+- **Quick action buttons** (Start, Complete, Activate, Deactivate, Adjust Stock, Approve, Reject)
 - **52-week visual PPM calendar** 📅
 - **Comprehensive reports with CSV export and print** 📈
 - **Complete work order lifecycle management** 🔧
@@ -471,12 +539,12 @@ This CMMS system is a **production-ready, feature-complete maintenance managemen
 - **Role-based security with password management** 🔐
 - **Confirmation dialogs for destructive actions** ⚠️
 
-**Total Features: 80+**
-**Pages: 11**
-**Database Tables: 7**
-**API Endpoints: 50+**
+**Total Features: 90+**
+**Pages: 12**
+**Database Tables: 8**
+**API Endpoints: 55+**
 
-Perfect for manufacturing facilities, building management, fleet maintenance, equipment servicing, and any organization requiring systematic maintenance tracking.
+Perfect for manufacturing facilities, building management, fleet maintenance, equipment servicing, and any organization requiring systematic maintenance tracking with workforce management.
 
 ---
 

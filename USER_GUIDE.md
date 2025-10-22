@@ -141,11 +141,40 @@ These buttons provide faster status updates without opening the edit form.
    - **Description**: Detailed instructions
 4. Click **"Create Schedule"**
 
+### Auto Work Order Generation 🤖
+The system automatically creates work orders from PM schedules:
+
+**How It Works:**
+- When a PM task becomes due, the system automatically generates a work order
+- Work order includes all PM task details (asset, description, priority)
+- Work order is automatically assigned to an available technician
+- No manual work order creation needed for scheduled maintenance
+
+**Auto-Assignment Logic:**
+1. **Sub-Role Matching**: System matches PM task requirements to technician specialization
+   - Electrical tasks → Assigned to Electrical technicians
+   - Mechanical tasks → Assigned to Mechanical technicians
+2. **Workload Balancing**: Distributes work evenly across available technicians
+   - System tracks current workload of each technician
+   - New tasks assigned to least busy qualified technician
+3. **Leave Consideration**: Automatically excludes technicians on approved leave
+   - Checks leave dates against work order schedule
+   - Only assigns to technicians who will be available
+   - Prevents missed assignments due to absences
+
+**Benefits:**
+- Ensures qualified technicians are assigned appropriate tasks
+- Prevents overloading any single technician
+- Maintains continuity even when staff are on leave
+- Reduces manual scheduling workload
+- Improves maintenance efficiency and quality
+
 ### Completing PM Tasks
 1. Find the task in the Preventive Maintenance list
 2. Click **"Complete"** button
 3. System automatically calculates next due date based on frequency
 4. Task is rescheduled for next occurrence
+5. A new work order will be auto-generated when the next due date arrives
 
 ### Editing PM Schedules
 1. Locate the PM schedule in the table
@@ -328,6 +357,182 @@ Export features are useful for:
 
 ---
 
+## Leave Management 🏖️
+
+### Overview
+The Leave Management system allows technicians to request time off and managers to approve or reject those requests. The system integrates with work order auto-assignment to ensure absent technicians don't receive new assignments.
+
+### Requesting Leave (All Users)
+
+**Step-by-Step:**
+1. Click **"Leave"** in the sidebar
+2. Click **"+ Request Leave"** button
+3. Fill in the leave request form:
+   - **Leave Type**: Select from dropdown
+     - Vacation
+     - Sick
+     - Personal
+     - Other
+   - **Start Date**: First day of leave
+   - **End Date**: Last day of leave
+   - **Notes**: Optional context or reason (e.g., "Family vacation", "Doctor appointment")
+4. Click **"Submit Request"**
+5. Success message confirms your request has been submitted
+6. Request appears in the table with "Pending" status (yellow badge)
+
+**Duration Calculation:**
+- System automatically calculates the number of days between start and end dates
+- Duration is displayed in the table (e.g., "5 days")
+- Includes both start and end dates in the count
+
+### Understanding Leave Types 📋
+
+**Vacation** 🌴
+- Planned time off for holidays and personal travel
+- Requires advance notice
+- Subject to approval based on staffing needs
+- Examples: Family vacation, holiday trips, extended breaks
+
+**Sick** 🤒
+- Medical leave and health-related absences
+- For illness, medical appointments, recovery
+- May require less advance notice
+- Examples: Flu, surgery recovery, doctor appointments
+
+**Personal** 👤
+- Personal matters and family obligations
+- For non-medical personal needs
+- Examples: Family emergencies, personal appointments, legal matters
+
+**Other** 📌
+- Miscellaneous leave types not covered above
+- Examples: Training courses, jury duty, bereavement, conferences
+
+### Viewing Leave Requests
+
+**For Technicians:**
+- See only your own leave requests
+- View status of each request (Pending, Approved, Rejected)
+- Check dates and duration
+- Monitor approval status
+
+**For Managers and Admins:**
+- View all leave requests from all users
+- See full team leave calendar
+- Filter by status to focus on pending requests
+- Plan staffing based on approved leave
+
+**Filtering Options:**
+1. Click status filter buttons at top of table:
+   - **All**: Show all leave requests
+   - **Pending**: Show only requests awaiting approval (yellow)
+   - **Approved**: Show only approved leave (green)
+   - **Rejected**: Show only rejected requests (red)
+
+### Leave Status Meanings
+
+**🟡 Pending**
+- Request submitted and awaiting manager/admin review
+- Technician can still work and receive assignments
+- No action taken yet
+- Appears in yellow badge
+
+**🟢 Approved**
+- Manager/admin has approved the leave request
+- Technician will be off during specified dates
+- System will NOT assign work orders during leave period
+- Appears in green badge
+- Confirmed time off
+
+**🔴 Rejected**
+- Manager/admin has declined the leave request
+- Technician remains available for work
+- May resubmit with different dates if needed
+- Appears in red badge
+
+### Approving/Rejecting Leave (Managers & Admins Only)
+
+**Approval Process:**
+1. Navigate to **"Leave"** page
+2. Review pending leave requests (yellow badges)
+3. Consider staffing needs and workload
+4. For each request, you can:
+
+**To Approve:**
+1. Click **"Approve"** button next to the request
+2. Confirmation dialog appears
+3. Click **"Confirm"** to approve the leave
+4. Status changes to "Approved" (green badge)
+5. Technician is now marked as unavailable for the leave period
+6. Success message confirms approval
+
+**To Reject:**
+1. Click **"Reject"** button next to the request
+2. Confirmation dialog appears
+3. Click **"Confirm"** to reject the leave
+4. Status changes to "Rejected" (red badge)
+5. Technician remains available for assignments
+6. Consider communicating reason for rejection to the employee
+7. Success message confirms rejection
+
+**Important Notes:**
+- Cannot approve or reject your own leave requests
+- Only pending requests show action buttons
+- Approved and rejected requests can be viewed but not changed
+- Consider team workload before approving multiple overlapping leave requests
+
+### Leave Integration with Work Orders 🔗
+
+**How It Works:**
+When the system auto-assigns work orders from PM schedules, it automatically:
+
+1. **Checks Leave Dates**: Reviews all approved leave requests
+2. **Excludes Unavailable Technicians**: Removes technicians on leave from assignment pool
+3. **Assigns to Available Staff**: Only assigns work orders to technicians who will be present
+4. **Prevents Conflicts**: No assignments made to absent technicians
+5. **Redistributes Work**: Balances workload among available team members
+
+**Benefits:**
+- No manual tracking of who's available
+- Prevents missed work orders due to absences
+- Ensures work is assigned to present staff
+- Maintains operational continuity
+- Reduces scheduling errors
+- Fair workload distribution among available technicians
+
+**Example Scenario:**
+- John (Electrical) has approved leave from June 1-5
+- PM schedule creates work order on June 3
+- System sees John is on leave
+- Work order automatically assigned to Sarah (Electrical) instead
+- No manual intervention needed
+
+### Best Practices for Leave Management
+
+**For Technicians:**
+- Submit leave requests as far in advance as possible
+- Check team calendar before requesting (if available)
+- Provide notes for context when helpful
+- Monitor status of your requests
+- Plan around busy maintenance periods when possible
+
+**For Managers:**
+- Review pending requests promptly
+- Consider staffing levels before approving
+- Avoid approving all technicians of same specialty simultaneously
+- Communicate decisions clearly
+- Use rejection sparingly and with explanation
+- Balance employee needs with operational requirements
+
+**For Planning:**
+- Review approved leave weekly when planning work
+- Check 52-week calendar against leave schedule
+- Adjust PM schedules if needed for major leave periods
+- Consider staggering vacation times
+- Ensure coverage for critical maintenance periods
+
+---
+
 ## User Management (Admin/Manager Only)
 
 ### Adding Users
@@ -339,6 +544,7 @@ Export features are useful for:
    - **Email**: User email (required)
    - **Password**: Minimum 6 characters (required)
    - **Role**: Select permission level
+   - **Sub-Role**: For Technicians only - select specialization (Electrical or Mechanical)
 4. Click **"Create User"**
 
 ### User Roles
@@ -346,6 +552,37 @@ Export features are useful for:
 - **Manager**: Can manage all maintenance data
 - **Technician**: Can update assigned work orders
 - **Viewer**: Read-only access
+
+### Setting Technician Specialization 🔧
+The **Sub-Role** field is used to specify a technician's area of expertise:
+
+**Purpose:**
+- Enables intelligent auto-assignment of work orders
+- Matches technician skills to maintenance task requirements
+- Improves maintenance quality by assigning qualified personnel
+- Optimizes workforce utilization
+
+**Sub-Role Options:**
+- **Electrical**: For electricians and electrical maintenance technicians
+  - Assigned electrical system maintenance
+  - Wiring, circuits, control panels, motors
+  - Lighting systems and power distribution
+- **Mechanical**: For mechanics and mechanical maintenance technicians
+  - Assigned mechanical system maintenance
+  - HVAC, pumps, compressors, conveyors
+  - Bearings, belts, gears, and moving parts
+
+**How to Set:**
+1. When creating or editing a user with "Technician" role
+2. Select the appropriate sub-role from dropdown
+3. Leave blank for non-technician roles (Admin, Manager, Viewer)
+4. System uses this for automatic work order assignment
+
+**Best Practices:**
+- Assign sub-roles based on certifications and training
+- Update sub-roles when technicians gain new skills
+- Consider creating users with both specializations if cross-trained
+- Use sub-roles to balance workload across specialties
 
 ### Editing Users
 1. Find the user in the Users table
@@ -391,16 +628,19 @@ Export features are useful for:
 ### Work Orders
 - Create work orders for all maintenance activities
 - Use appropriate priority levels (save "Urgent" for emergencies)
-- Assign work orders to specific technicians
+- Trust the auto-assignment system for PM-generated work orders
 - Update status as work progresses
 - Record actual hours for tracking
+- Review auto-assigned work orders for accuracy
 
 ### Preventive Maintenance
 - Create PM schedules for all critical assets
 - Set realistic frequencies based on manufacturer recommendations
 - Complete PM tasks on time to avoid overdue status
 - Review the 52-week calendar weekly to plan ahead
-- Assign PM tasks to technicians in advance
+- Set appropriate sub-roles for PM tasks (Electrical/Mechanical)
+- Let auto-assignment handle technician selection
+- Monitor workload distribution across technicians
 
 ### Inventory
 - Set appropriate minimum quantities to avoid stockouts
@@ -413,6 +653,21 @@ Export features are useful for:
 - Monitor KPIs to identify improvement areas
 - Use data to justify maintenance budget
 - Track completion rates to measure team performance
+
+### Leave Management
+- Submit leave requests well in advance
+- Keep leave requests up to date
+- Managers: Review and respond to requests promptly
+- Plan around peak maintenance periods
+- Ensure coverage before approving overlapping leave
+- Trust the system to handle assignment during absences
+
+### User Management
+- Set accurate sub-roles for all technicians
+- Update sub-roles when technicians gain new skills
+- Keep user information current
+- Review user access levels periodically
+- Remove accounts for departed employees promptly
 
 ---
 
@@ -449,18 +704,23 @@ Export features are useful for:
 - Review new work orders
 - Update work order status
 - Complete assigned PM tasks
+- Check pending leave requests (Managers/Admins)
 
 ### Weekly Tasks
 - Review 52-week calendar
 - Check inventory low stock items
-- Assign upcoming work orders
+- Assign upcoming work orders (if not auto-assigned)
 - Monitor open urgent work orders
+- Review and approve/reject leave requests (Managers/Admins)
+- Check upcoming approved leave for staffing planning
 
 ### Monthly Tasks
 - Run reports and review KPIs
 - Analyze completion rates
 - Review asset status
 - Plan preventive maintenance schedule
+- Review leave patterns and staffing coverage
+- Check technician workload balance
 
 ---
 
@@ -485,6 +745,24 @@ Export features are useful for:
 - Verify current quantity is at or below minimum quantity
 - Click "Low Stock Only" button to filter
 - Check if filter is applied
+
+### Leave Request Not Showing
+- Technicians can only see their own requests
+- Check status filter (All/Pending/Approved/Rejected)
+- Refresh the page
+- Verify you're logged in with correct account
+
+### Work Order Not Auto-Assigned
+- Check that technician has appropriate sub-role set
+- Verify technician is not on approved leave during work order dates
+- Ensure at least one qualified technician is available
+- Check that PM schedule is active
+- Review system logs for assignment details
+
+### Can't Approve Own Leave Request
+- This is by design - users cannot approve their own leave
+- Contact your manager or admin to approve your request
+- Ensures proper approval workflow
 
 ---
 
