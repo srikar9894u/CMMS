@@ -10,6 +10,7 @@ const Layout = () => {
     { name: 'Assets', path: '/assets', icon: '🏗️' },
     { name: 'Work Orders', path: '/work-orders', icon: '🔧' },
     { name: 'Preventive Maintenance', path: '/preventive-maintenance', icon: '⚙️' },
+    { name: '52-Week Calendar', path: '/pm-calendar', icon: '📅' },
     { name: 'Inventory', path: '/inventory', icon: '📦' },
   ];
 

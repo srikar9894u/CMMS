@@ -9,6 +9,7 @@ import AssetDetail from './pages/AssetDetail';
 import WorkOrders from './pages/WorkOrders';
 import WorkOrderDetail from './pages/WorkOrderDetail';
 import PreventiveMaintenance from './pages/PreventiveMaintenance';
+import PMCalendar from './pages/PMCalendar';
 import Inventory from './pages/Inventory';
 import Users from './pages/Users';
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="work-orders" element={<WorkOrders />} />
             <Route path="work-orders/:id" element={<WorkOrderDetail />} />
             <Route path="preventive-maintenance" element={<PreventiveMaintenance />} />
+            <Route path="pm-calendar" element={<PMCalendar />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="users" element={<Users />} />
           </Route>
