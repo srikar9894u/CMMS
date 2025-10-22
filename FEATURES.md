@@ -20,10 +20,11 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Latest work orders and updates
 
 ### 2. **Asset Management** 🏗️
-- **Complete CRUD Operations**
-  - Add new assets with comprehensive details
-  - Edit existing assets
-  - View detailed asset information
+- **Full CRUD Operations**
+  - ✅ Create new assets via modal forms with comprehensive details
+  - ✏️ Edit existing assets with pre-filled forms for quick updates
+  - 🗑️ Delete assets with confirmation dialog (cannot be undone)
+  - 👁️ View detailed asset information in organized layout
   - Track asset status (operational, down, maintenance, retired)
 - **Asset Details**
   - Asset tag and name
@@ -33,13 +34,17 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Criticality level (low, medium, high, critical)
   - Description and notes
 - **Asset Tracking**
-  - Status monitoring
+  - Status monitoring with color-coded badges
   - Filter by status and category
   - Quick access to asset details
+  - Actions column with Edit/Delete buttons
 
 ### 3. **Work Order Management** 🔧
-- **Full Work Order System**
-  - Create work orders with title and description
+- **Full CRUD Operations**
+  - ✅ Create work orders via modal forms with title and description
+  - ✏️ Edit existing work orders with pre-filled data
+  - 🗑️ Delete work orders with confirmation (permanent action)
+  - 👁️ View detailed work order information
   - Link to specific assets
   - Set priority (low, medium, high, urgent)
   - Define work type (corrective, preventive, inspection, project)
@@ -47,31 +52,44 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Set estimated and actual hours
   - Schedule work with date/time
   - Add notes and instructions
+- **Status Management** ⚡
+  - Quick status update buttons: "Start" and "Complete"
+  - Start button: Changes status from Open/Assigned to In Progress
+  - Complete button: Changes status from In Progress to Completed
+  - Full status workflow (open → assigned → in progress → completed)
+  - No confirmation needed for fast workflow management
 - **Work Order Tracking**
-  - Status workflow (open → assigned → in progress → completed)
   - Priority-based color coding
   - Filter by status and priority
-  - View detailed work order information
   - Track assigned technician and reporter
+  - Actions column with Edit/Delete/Status buttons
 - **Parts Integration**
   - Link inventory items to work orders
   - Track parts used in maintenance
 
 ### 4. **Preventive Maintenance** ⚙️
-- **PM Schedule Management**
-  - Create recurring PM schedules
+- **Full CRUD Operations**
+  - ✅ Create recurring PM schedules via modal forms
+  - ✏️ Edit existing schedules with pre-filled data
+  - 🗑️ Delete schedules with confirmation (removes all future occurrences)
+  - 👁️ View all scheduled maintenance tasks
   - Select asset for maintenance
   - Set frequency (daily, weekly, monthly, quarterly, yearly)
   - Define recurrence interval (e.g., every 2 weeks)
   - Set next due date
   - Assign technician
   - Add task descriptions and instructions
+- **Activate/Deactivate Schedules** 🔄
+  - Activate button: Resume inactive schedules to appear on calendar
+  - Deactivate button: Pause active schedules without deleting
+  - Useful for seasonal equipment or temporary maintenance suspension
+  - Status toggle preserves all schedule data
+  - Deactivated schedules don't generate calendar tasks
 - **PM Tracking**
-  - View all scheduled maintenance
   - Identify overdue tasks (red highlighting)
   - Spot due-soon tasks (yellow highlighting)
   - Complete tasks with automatic rescheduling
-  - Active/inactive schedule toggle
+  - Actions column with Edit/Delete/Complete/Activate/Deactivate buttons
 - **Automation**
   - Auto-calculate next due date based on frequency
   - Automatic reschedule after completion
@@ -105,13 +123,23 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Date labels for quarter start/end
 
 ### 6. **Inventory Management** 📦
-- **Inventory Tracking**
-  - Add inventory items with part numbers
+- **Full CRUD Operations**
+  - ✅ Create inventory items with part numbers via modal forms
+  - ✏️ Edit existing items with pre-filled data
+  - 🗑️ Delete items with confirmation (permanent action)
+  - 👁️ View all inventory with detailed information
   - Set quantities and minimum stock levels
   - Track unit costs and calculate totals
   - Organize by categories
   - Record storage locations
   - Track suppliers
+- **Stock Adjustment** 📊
+  - Quick adjustment button for rapid quantity updates
+  - Add stock: Enter positive number (e.g., +50 for receiving shipment)
+  - Remove stock: Enter negative number (e.g., -10 for parts used)
+  - Automatic calculation of new quantity
+  - No need to edit full item for simple stock changes
+  - Ideal for receiving stock, recording usage, or inventory counts
 - **Low Stock Monitoring**
   - Automatic low stock detection
   - Visual highlighting (yellow rows)
@@ -124,6 +152,7 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Current and minimum quantities
   - Unit cost
   - Location and supplier information
+  - Actions column with Edit/Delete/Adjust Stock buttons
 
 ### 7. **Reports & Analytics** 📈 ⭐ *Featured*
 - **Visual Dashboards**
@@ -146,27 +175,43 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
 - **Date Range Filtering**
   - Custom date ranges
   - Historical data analysis
-- **Export Options** (UI ready)
-  - Export to PDF
-  - Export to Excel
-  - Print reports
+- **Export and Print** 📄
+  - **CSV Export**: Download all report data to spreadsheet format
+  - Export button generates CSV file with comprehensive data
+  - Open in Excel, Google Sheets, or any spreadsheet application
+  - Includes all charts, KPIs, and work order data
+  - **Print Reports**: Print-friendly formatted output
+  - Print button opens browser print dialog
+  - Save as PDF or print to paper
+  - Professional formatting for presentations and documentation
+  - Useful for monthly reports, board meetings, compliance records
 
 ### 8. **User Management** 👥
-- **User Administration**
-  - Create new users
+- **Full CRUD Operations**
+  - ✅ Create new users via modal forms
+  - ✏️ Edit existing users with pre-filled data
+  - 🗑️ Delete users with confirmation (immediate logout)
+  - 👁️ View all users in organized table
   - Set usernames and emails
   - Assign passwords (minimum 6 characters)
   - Define roles with permissions
+- **Password Handling** 🔒
+  - On edit: Leave password field blank to keep current password
+  - Only enter new password if changing it
+  - User continues with old password if field is empty
+  - Secure password storage with bcrypt hashing
+  - Minimum 6 character requirement
 - **Role-Based Access Control**
   - **Admin**: Full system access, user management
   - **Manager**: Manage assets, work orders, PM, inventory
   - **Technician**: Update work orders, view information
   - **Viewer**: Read-only access to all modules
 - **User Interface**
-  - List all users
+  - List all users with detailed information
   - Color-coded role badges
-  - Edit and delete capabilities
+  - Actions column with Edit/Delete buttons
   - Creation date tracking
+  - Cannot delete own account while logged in
 
 ---
 
@@ -329,7 +374,13 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
 
 ## 🎯 Key Achievements
 
-✅ **Complete CRUD operations** for all entities
+✅ **Complete CRUD operations** for all entities (Create, Read, Update, Delete)
+✅ **Edit/Delete with confirmation** dialogs on all modules
+✅ **Stock adjustment** feature for quick inventory updates
+✅ **Work order status management** with Start/Complete buttons
+✅ **PM schedule activation/deactivation** for flexible scheduling
+✅ **CSV export and print** functionality for reports
+✅ **Password handling** with optional update on user edit
 ✅ **52-Week PPM Calendar** with visual timeline
 ✅ **Reports & Analytics** with charts and KPIs
 ✅ **Role-based access control** with 4 role types
@@ -410,17 +461,20 @@ While the system is feature-complete, potential enhancements include:
 
 This CMMS system is a **production-ready, feature-complete maintenance management solution** designed for local LAN deployment. It includes all essential CMMS functionality plus advanced features like:
 
+- **Complete CRUD operations on all modules** ✏️🗑️
+- **Quick action buttons** (Start, Complete, Activate, Deactivate, Adjust Stock)
 - **52-week visual PPM calendar** 📅
-- **Comprehensive reports with charts** 📈
+- **Comprehensive reports with CSV export and print** 📈
 - **Complete work order lifecycle management** 🔧
 - **Automated preventive maintenance** ⚙️
-- **Inventory tracking with alerts** 📦
-- **Role-based security** 🔐
+- **Inventory tracking with quick stock adjustments** 📦
+- **Role-based security with password management** 🔐
+- **Confirmation dialogs for destructive actions** ⚠️
 
-**Total Features: 70+**
+**Total Features: 80+**
 **Pages: 11**
 **Database Tables: 7**
-**API Endpoints: 40+**
+**API Endpoints: 50+**
 
 Perfect for manufacturing facilities, building management, fleet maintenance, equipment servicing, and any organization requiring systematic maintenance tracking.
 
