@@ -12,6 +12,7 @@ const Layout = () => {
     { name: 'Preventive Maintenance', path: '/preventive-maintenance', icon: '⚙️' },
     { name: '52-Week Calendar', path: '/pm-calendar', icon: '📅' },
     { name: 'Inventory', path: '/inventory', icon: '📦' },
+    { name: 'Reports', path: '/reports', icon: '📈' },
   ];
 
   if (user?.role === 'admin' || user?.role === 'manager') {

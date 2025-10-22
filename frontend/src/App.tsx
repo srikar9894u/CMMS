@@ -12,6 +12,7 @@ import PreventiveMaintenance from './pages/PreventiveMaintenance';
 import PMCalendar from './pages/PMCalendar';
 import Inventory from './pages/Inventory';
 import Users from './pages/Users';
+import Reports from './pages/Reports';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="preventive-maintenance" element={<PreventiveMaintenance />} />
             <Route path="pm-calendar" element={<PMCalendar />} />
             <Route path="inventory" element={<Inventory />} />
+            <Route path="reports" element={<Reports />} />
             <Route path="users" element={<Users />} />
           </Route>
         </Routes>
