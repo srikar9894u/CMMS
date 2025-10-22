@@ -21,6 +21,16 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
   const [showLowStock, setShowLowStock] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [isAdjustStockOpen, setIsAdjustStockOpen] = useState(false);
+  const [adjustingItemId, setAdjustingItemId] = useState<number | null>(null);
+  const [adjustStockData, setAdjustStockData] = useState({
+    quantity: '',
+    adjustment_type: 'add',
+    notes: '',
+  });
   const [formData, setFormData] = useState({
     part_number: '',
     name: '',
@@ -66,9 +76,16 @@ const Inventory = () => {
         unit_cost: formData.unit_cost ? parseFloat(formData.unit_cost) : null,
       };
 
-      await axios.post('/api/inventory', payload);
-      setSuccess('Inventory item created successfully!');
+      if (isEditMode && editingId) {
+        await axios.put(`/api/inventory/${editingId}`, payload);
+        setSuccess('Inventory item updated successfully!');
+      } else {
+        await axios.post('/api/inventory', payload);
+        setSuccess('Inventory item created successfully!');
+      }
       setIsModalOpen(false);
+      setIsEditMode(false);
+      setEditingId(null);
       setFormData({
         part_number: '',
         name: '',
@@ -85,12 +102,105 @@ const Inventory = () => {
       fetchInventory();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to create inventory item');
+      setError(error.response?.data?.error || `Failed to ${isEditMode ? 'update' : 'create'} inventory item`);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEdit = async (item: InventoryItem) => {
+    try {
+      const response = await axios.get(`/api/inventory/${item.id}`);
+      const itemData = response.data;
+      setFormData({
+        part_number: itemData.part_number || '',
+        name: itemData.name || '',
+        description: itemData.description || '',
+        category: itemData.category || '',
+        quantity: itemData.quantity?.toString() || '0',
+        min_quantity: itemData.min_quantity?.toString() || '0',
+        unit: itemData.unit || '',
+        unit_cost: itemData.unit_cost?.toString() || '',
+        location: itemData.location || '',
+        supplier: itemData.supplier || '',
+        notes: itemData.notes || '',
+      });
+      setEditingId(item.id);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      setError('Failed to load inventory item details');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await axios.delete(`/api/inventory/${id}`);
+      setSuccess('Inventory item deleted successfully!');
+      setDeleteConfirm(null);
+      fetchInventory();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to delete inventory item');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleAdjustStock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adjustingItemId) return;
+
+    try {
+      await axios.post(`/api/inventory/${adjustingItemId}/adjust`, {
+        quantity: parseInt(adjustStockData.quantity),
+        adjustment_type: adjustStockData.adjustment_type,
+        notes: adjustStockData.notes,
+      });
+      setSuccess('Stock adjusted successfully!');
+      setIsAdjustStockOpen(false);
+      setAdjustingItemId(null);
+      setAdjustStockData({
+        quantity: '',
+        adjustment_type: 'add',
+        notes: '',
+      });
+      fetchInventory();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to adjust stock');
+    }
+  };
+
+  const openAddModal = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      part_number: '',
+      name: '',
+      description: '',
+      category: '',
+      quantity: '0',
+      min_quantity: '0',
+      unit: '',
+      unit_cost: '',
+      location: '',
+      supplier: '',
+      notes: '',
+    });
+    setIsModalOpen(true);
+  };
+
+  const openAdjustStock = (item: InventoryItem) => {
+    setAdjustingItemId(item.id);
+    setAdjustStockData({
+      quantity: '',
+      adjustment_type: 'add',
+      notes: '',
+    });
+    setIsAdjustStockOpen(true);
   };
 
   const isLowStock = (item: InventoryItem) => {
@@ -112,7 +222,7 @@ const Inventory = () => {
           >
             {showLowStock ? 'Show All' : 'Low Stock Only'}
           </button>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+          <button onClick={openAddModal} className="btn btn-primary">
             + Add Item
           </button>
         </div>
@@ -162,7 +272,43 @@ const Inventory = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.location || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.supplier || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <button className="text-primary-600 hover:text-primary-900">Edit</button>
+                  {deleteConfirm === item.id ? (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="text-primary-600 hover:text-primary-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(item.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => openAdjustStock(item)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Adjust Stock
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -175,8 +321,16 @@ const Inventory = () => {
         )}
       </div>
 
-      {/* Add Inventory Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Inventory Item">
+      {/* Add/Edit Inventory Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setIsEditMode(false);
+          setEditingId(null);
+        }}
+        title={isEditMode ? "Edit Inventory Item" : "Add Inventory Item"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -318,11 +472,98 @@ const Inventory = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsEditMode(false);
+                setEditingId(null);
+              }}
+              className="btn btn-secondary"
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Add Item
+              {isEditMode ? 'Update Item' : 'Create Item'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Adjust Stock Modal */}
+      <Modal
+        isOpen={isAdjustStockOpen}
+        onClose={() => {
+          setIsAdjustStockOpen(false);
+          setAdjustingItemId(null);
+        }}
+        title="Adjust Stock"
+      >
+        <form onSubmit={handleAdjustStock} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Adjustment Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="adjustment_type"
+              value={adjustStockData.adjustment_type}
+              onChange={(e) => setAdjustStockData({ ...adjustStockData, adjustment_type: e.target.value })}
+              className="input"
+              required
+            >
+              <option value="add">Add Stock</option>
+              <option value="remove">Remove Stock</option>
+              <option value="set">Set Stock Level</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Quantity <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="quantity"
+              value={adjustStockData.quantity}
+              onChange={(e) => setAdjustStockData({ ...adjustStockData, quantity: e.target.value })}
+              className="input"
+              required
+              min="0"
+              placeholder="Enter quantity"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea
+              name="notes"
+              value={adjustStockData.notes}
+              onChange={(e) => setAdjustStockData({ ...adjustStockData, notes: e.target.value })}
+              rows={3}
+              className="input"
+              placeholder="Reason for adjustment (optional)"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAdjustStockOpen(false);
+                setAdjustingItemId(null);
+              }}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Adjust Stock
             </button>
           </div>
         </form>

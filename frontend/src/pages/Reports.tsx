@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { format } from 'date-fns';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Reports = () => {
@@ -28,6 +29,37 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const exportToCSV = () => {
+    const headers = ['ID', 'Title', 'Asset', 'Priority', 'Status', 'Type', 'Assigned To', 'Created Date'];
+    const csvData = workOrders.map(wo => [
+      wo.id,
+      wo.title,
+      wo.asset_name || 'N/A',
+      wo.priority,
+      wo.status,
+      wo.work_type,
+      wo.assigned_to_name || 'Unassigned',
+      format(new Date(wo.created_at), 'yyyy-MM-dd')
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cmms-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   if (loading) {
@@ -66,7 +98,7 @@ const Reports = () => {
           <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
           <p className="text-gray-600 mt-1">Comprehensive maintenance insights and metrics</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 no-print">
           <input
             type="date"
             value={dateRange.start}
@@ -315,14 +347,36 @@ const Reports = () => {
       </div>
 
       {/* Export Options */}
-      <div className="card mt-6">
+      <div className="card mt-6 no-print">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Reports</h3>
         <div className="flex space-x-4">
-          <button className="btn btn-secondary">Export to PDF</button>
-          <button className="btn btn-secondary">Export to Excel</button>
-          <button className="btn btn-secondary">Print Report</button>
+          <button onClick={exportToCSV} className="btn btn-secondary">
+            Export to CSV
+          </button>
+          <button onClick={handlePrint} className="btn btn-secondary">
+            Print Report
+          </button>
         </div>
       </div>
+
+      {/* Print Styles */}
+      <style>{`
+        @media print {
+          button, .no-print {
+            display: none !important;
+          }
+          .card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb;
+          }
+          body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+        }
+      `}</style>
     </div>
   );
 };

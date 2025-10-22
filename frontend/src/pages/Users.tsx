@@ -22,6 +22,9 @@ const Users = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -53,9 +56,20 @@ const Users = () => {
     setSuccess('');
 
     try {
-      await axios.post('/api/users', formData);
-      setSuccess('User created successfully!');
+      if (isEditMode && editingId) {
+        // For edit mode, only send password if it's been changed
+        const payload = formData.password
+          ? formData
+          : { username: formData.username, email: formData.email, role: formData.role, full_name: formData.full_name };
+        await axios.put(`/api/users/${editingId}`, payload);
+        setSuccess('User updated successfully!');
+      } else {
+        await axios.post('/api/users', formData);
+        setSuccess('User created successfully!');
+      }
       setIsModalOpen(false);
+      setIsEditMode(false);
+      setEditingId(null);
       setFormData({
         username: '',
         email: '',
@@ -66,12 +80,58 @@ const Users = () => {
       fetchUsers();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      setError(error.response?.data?.error || error.response?.data?.errors?.[0]?.msg || 'Failed to create user');
+      setError(error.response?.data?.error || error.response?.data?.errors?.[0]?.msg || `Failed to ${isEditMode ? 'update' : 'create'} user`);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEdit = async (user: User) => {
+    try {
+      const response = await axios.get(`/api/users/${user.id}`);
+      const userData = response.data;
+      setFormData({
+        username: userData.username || '',
+        email: userData.email || '',
+        password: '', // Leave password empty for edit mode
+        role: userData.role || 'technician',
+        full_name: userData.full_name || '',
+      });
+      setEditingId(user.id);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      setError('Failed to load user details');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await axios.delete(`/api/users/${id}`);
+      setSuccess('User deleted successfully!');
+      setDeleteConfirm(null);
+      fetchUsers();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to delete user');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const openAddModal = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      username: '',
+      email: '',
+      password: '',
+      role: 'technician',
+      full_name: '',
+    });
+    setIsModalOpen(true);
   };
 
   if (loading) {
@@ -82,7 +142,7 @@ const Users = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+        <button onClick={openAddModal} className="btn btn-primary">
           + Add User
         </button>
       </div>
@@ -122,8 +182,37 @@ const Users = () => {
                   {new Date(user.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <button className="text-primary-600 hover:text-primary-900 mr-3">Edit</button>
-                  <button className="text-red-600 hover:text-red-900">Delete</button>
+                  {deleteConfirm === user.id ? (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="text-primary-600 hover:text-primary-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(user.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -131,8 +220,16 @@ const Users = () => {
         </table>
       </div>
 
-      {/* Add User Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New User">
+      {/* Add/Edit User Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setIsEditMode(false);
+          setEditingId(null);
+        }}
+        title={isEditMode ? "Edit User" : "Add New User"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -186,7 +283,7 @@ const Users = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password <span className="text-red-500">*</span>
+              Password {!isEditMode && <span className="text-red-500">*</span>}
             </label>
             <input
               type="password"
@@ -194,11 +291,13 @@ const Users = () => {
               value={formData.password}
               onChange={handleChange}
               className="input"
-              required
+              required={!isEditMode}
               minLength={6}
-              placeholder="Minimum 6 characters"
+              placeholder={isEditMode ? "Leave blank to keep current password" : "Minimum 6 characters"}
             />
-            <p className="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
+            <p className="mt-1 text-xs text-gray-500">
+              {isEditMode ? "Leave blank to keep current password" : "Minimum 6 characters"}
+            </p>
           </div>
 
           <div>
@@ -214,11 +313,19 @@ const Users = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsEditMode(false);
+                setEditingId(null);
+              }}
+              className="btn btn-secondary"
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Create User
+              {isEditMode ? 'Update User' : 'Create User'}
             </button>
           </div>
         </form>
