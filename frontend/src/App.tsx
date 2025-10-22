@@ -13,6 +13,7 @@ import PMCalendar from './pages/PMCalendar';
 import Inventory from './pages/Inventory';
 import Users from './pages/Users';
 import Reports from './pages/Reports';
+import LeaveManagement from './pages/LeaveManagement';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
             <Route path="users" element={<Users />} />
+            <Route path="leave" element={<LeaveManagement />} />
           </Route>
         </Routes>
       </Router>

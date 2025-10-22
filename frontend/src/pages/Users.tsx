@@ -7,6 +7,7 @@ interface User {
   username: string;
   email: string;
   role: string;
+  sub_role?: string;
   full_name: string;
   created_at: string;
 }
@@ -30,6 +31,7 @@ const Users = () => {
     email: '',
     password: '',
     role: 'technician',
+    sub_role: '',
     full_name: '',
   });
   const [error, setError] = useState('');
@@ -60,7 +62,7 @@ const Users = () => {
         // For edit mode, only send password if it's been changed
         const payload = formData.password
           ? formData
-          : { username: formData.username, email: formData.email, role: formData.role, full_name: formData.full_name };
+          : { username: formData.username, email: formData.email, role: formData.role, sub_role: formData.sub_role, full_name: formData.full_name };
         await axios.put(`/api/users/${editingId}`, payload);
         setSuccess('User updated successfully!');
       } else {
@@ -75,6 +77,7 @@ const Users = () => {
         email: '',
         password: '',
         role: 'technician',
+        sub_role: '',
         full_name: '',
       });
       fetchUsers();
@@ -97,6 +100,7 @@ const Users = () => {
         email: userData.email || '',
         password: '', // Leave password empty for edit mode
         role: userData.role || 'technician',
+        sub_role: userData.sub_role || '',
         full_name: userData.full_name || '',
       });
       setEditingId(user.id);
@@ -129,6 +133,7 @@ const Users = () => {
       email: '',
       password: '',
       role: 'technician',
+      sub_role: '',
       full_name: '',
     });
     setIsModalOpen(true);
@@ -161,6 +166,7 @@ const Users = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Full Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sub-Role</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
@@ -177,6 +183,9 @@ const Users = () => {
                   <span className={`badge ${roleColors[user.role]}`}>
                     {user.role}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                  {user.sub_role || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(user.created_at).toLocaleDateString()}
@@ -310,6 +319,20 @@ const Users = () => {
               <option value="manager">Manager - Can manage assets, work orders, inventory</option>
               <option value="admin">Admin - Full system access</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Sub-Role (Specialization)
+            </label>
+            <select name="sub_role" value={formData.sub_role} onChange={handleChange} className="input">
+              <option value="">None</option>
+              <option value="electrical">Electrical</option>
+              <option value="mechanical">Mechanical</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Specialization for technicians - used for auto-assignment of PM tasks
+            </p>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

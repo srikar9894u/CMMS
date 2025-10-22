@@ -13,6 +13,7 @@ const Layout = () => {
     { name: '52-Week Calendar', path: '/pm-calendar', icon: '📅' },
     { name: 'Inventory', path: '/inventory', icon: '📦' },
     { name: 'Reports', path: '/reports', icon: '📈' },
+    { name: 'Leave Management', path: '/leave', icon: '🏖️' },
   ];
 
   if (user?.role === 'admin' || user?.role === 'manager') {

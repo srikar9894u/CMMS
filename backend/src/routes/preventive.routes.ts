@@ -6,6 +6,102 @@ import { authMiddleware, roleMiddleware, AuthRequest } from '../middleware/auth'
 const router = Router();
 router.use(authMiddleware);
 
+// Helper function to determine required sub_role based on asset category
+function determineSubRole(category: string): string | null {
+  if (!category) return null;
+
+  const categoryLower = category.toLowerCase();
+
+  // Electrical-related categories
+  if (categoryLower.includes('electrical') ||
+      categoryLower.includes('lighting') ||
+      categoryLower.includes('power')) {
+    return 'electrical';
+  }
+
+  // Mechanical-related categories
+  if (categoryLower.includes('mechanical') ||
+      categoryLower.includes('hvac') ||
+      categoryLower.includes('pump') ||
+      categoryLower.includes('motor')) {
+    return 'mechanical';
+  }
+
+  // No specific sub_role required
+  return null;
+}
+
+// Helper function to get next available user for auto-assignment
+function getNextAvailableUser(assetCategory: string, pmDate: string): number | null {
+  try {
+    const requiredSubRole = determineSubRole(assetCategory);
+
+    // Try to find user with matching sub_role
+    let availableUser = db.prepare(`
+      SELECT u.id, u.full_name,
+        (SELECT COUNT(*) FROM work_orders wo
+         WHERE wo.assigned_to = u.id
+         AND wo.status NOT IN ('completed', 'cancelled')) as workload
+      FROM users u
+      WHERE u.role IN ('technician', 'manager')
+      AND u.sub_role = ?
+      AND NOT EXISTS (
+        SELECT 1 FROM leave_requests lr
+        WHERE lr.user_id = u.id
+        AND lr.status = 'approved'
+        AND ? BETWEEN lr.start_date AND lr.end_date
+      )
+      ORDER BY workload ASC
+      LIMIT 1
+    `).get(requiredSubRole, pmDate) as any;
+
+    // If no user found with specific sub_role, fallback to any available technician
+    if (!availableUser && requiredSubRole) {
+      availableUser = db.prepare(`
+        SELECT u.id, u.full_name,
+          (SELECT COUNT(*) FROM work_orders wo
+           WHERE wo.assigned_to = u.id
+           AND wo.status NOT IN ('completed', 'cancelled')) as workload
+        FROM users u
+        WHERE u.role IN ('technician', 'manager')
+        AND NOT EXISTS (
+          SELECT 1 FROM leave_requests lr
+          WHERE lr.user_id = u.id
+          AND lr.status = 'approved'
+          AND ? BETWEEN lr.start_date AND lr.end_date
+        )
+        ORDER BY workload ASC
+        LIMIT 1
+      `).get(pmDate) as any;
+    }
+
+    // If still no user found (no sub_role was required), get any available technician
+    if (!availableUser) {
+      availableUser = db.prepare(`
+        SELECT u.id, u.full_name,
+          (SELECT COUNT(*) FROM work_orders wo
+           WHERE wo.assigned_to = u.id
+           AND wo.status NOT IN ('completed', 'cancelled')) as workload
+        FROM users u
+        WHERE u.role IN ('technician', 'manager')
+        AND NOT EXISTS (
+          SELECT 1 FROM leave_requests lr
+          WHERE lr.user_id = u.id
+          AND lr.status = 'approved'
+          AND ? BETWEEN lr.start_date AND lr.end_date
+        )
+        ORDER BY workload ASC
+        LIMIT 1
+      `).get(pmDate) as any;
+    }
+
+    return availableUser ? availableUser.id : null;
+  } catch (error) {
+    console.error('Error in getNextAvailableUser:', error);
+    return null;
+  }
+}
+
 // Get all preventive maintenance schedules
 router.get('/', (req: AuthRequest, res: Response) => {
   try {
@@ -57,6 +153,77 @@ router.get('/overdue', (req: AuthRequest, res: Response) => {
     res.json(schedules);
   } catch (error) {
     console.error('Get overdue PM error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Generate work orders for due preventive maintenance
+router.get('/generate-work-orders', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: Response) => {
+  try {
+    // Find all active PM schedules where next_due is today or in the past
+    const dueSchedules = db.prepare(`
+      SELECT pm.*, a.category
+      FROM preventive_maintenance pm
+      JOIN assets a ON pm.asset_id = a.id
+      WHERE pm.is_active = 1
+      AND date(pm.next_due) <= date('now')
+    `).all() as any[];
+
+    let createdCount = 0;
+    const createdWorkOrders: any[] = [];
+
+    for (const schedule of dueSchedules) {
+      // Check if a work order already exists for this PM schedule and date
+      const existingWorkOrder = db.prepare(`
+        SELECT id FROM work_orders
+        WHERE pm_schedule_id = ?
+        AND date(scheduled_date) = date(?)
+      `).get(schedule.id, schedule.next_due);
+
+      if (existingWorkOrder) {
+        // Work order already exists for this PM occurrence, skip
+        continue;
+      }
+
+      // Auto-assign based on asset category and user availability
+      const assignedUserId = getNextAvailableUser(schedule.category, schedule.next_due);
+
+      // Create work order
+      const result = db.prepare(`
+        INSERT INTO work_orders (
+          title, description, asset_id, priority, status, work_type,
+          assigned_to, reported_by, scheduled_date, pm_schedule_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        `[PM] ${schedule.title}`,
+        schedule.description || `Preventive maintenance for ${schedule.title}`,
+        schedule.asset_id,
+        'medium', // Default priority, can be made configurable
+        assignedUserId ? 'assigned' : 'open', // Status is 'assigned' if user found, otherwise 'open'
+        'preventive',
+        assignedUserId,
+        req.user!.id, // System-generated, reported by current user
+        schedule.next_due,
+        schedule.id
+      );
+
+      createdCount++;
+      createdWorkOrders.push({
+        id: result.lastInsertRowid,
+        pm_schedule_id: schedule.id,
+        title: `[PM] ${schedule.title}`,
+        assigned_to: assignedUserId,
+        scheduled_date: schedule.next_due
+      });
+    }
+
+    res.json({
+      message: `Successfully created ${createdCount} work order(s)`,
+      count: createdCount,
+      work_orders: createdWorkOrders
+    });
+  } catch (error) {
+    console.error('Generate work orders error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -195,6 +362,54 @@ router.post('/:id/complete', roleMiddleware('admin', 'manager', 'technician'), (
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(nextDue.toISOString(), req.params.id);
+
+    // Auto-generate work order for the next PM occurrence if it's due soon
+    try {
+      const asset = db.prepare('SELECT category FROM assets WHERE id = ?').get(schedule.asset_id) as any;
+
+      if (asset) {
+        const nextDueDate = nextDue.toISOString().split('T')[0]; // Get date portion
+
+        // Check if next due is within 7 days from now
+        const daysUntilDue = Math.floor((nextDue.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDue <= 7) {
+          // Check if work order already exists
+          const existingWorkOrder = db.prepare(`
+            SELECT id FROM work_orders
+            WHERE pm_schedule_id = ?
+            AND date(scheduled_date) = date(?)
+          `).get(req.params.id, nextDue.toISOString());
+
+          if (!existingWorkOrder) {
+            // Auto-assign based on asset category and user availability
+            const assignedUserId = getNextAvailableUser(asset.category, nextDue.toISOString());
+
+            // Create work order for next occurrence
+            db.prepare(`
+              INSERT INTO work_orders (
+                title, description, asset_id, priority, status, work_type,
+                assigned_to, reported_by, scheduled_date, pm_schedule_id
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+              `[PM] ${schedule.title}`,
+              schedule.description || `Preventive maintenance for ${schedule.title}`,
+              schedule.asset_id,
+              'medium',
+              assignedUserId ? 'assigned' : 'open',
+              'preventive',
+              assignedUserId,
+              req.user!.id,
+              nextDue.toISOString(),
+              req.params.id
+            );
+          }
+        }
+      }
+    } catch (autoGenError) {
+      console.error('Auto-generate work order error:', autoGenError);
+      // Don't fail the completion if auto-generation fails
+    }
 
     res.json({ message: 'PM task completed successfully', next_due: nextDue.toISOString() });
   } catch (error) {
