@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../components/Modal';
 
@@ -48,6 +47,9 @@ const WorkOrders = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', priority: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -115,9 +117,17 @@ const WorkOrders = () => {
         estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : null,
       };
 
-      await axios.post('/api/work-orders', payload);
-      setSuccess('Work order created successfully!');
+      if (isEditMode && editingId) {
+        await axios.put(`/api/work-orders/${editingId}`, payload);
+        setSuccess('Work order updated successfully!');
+      } else {
+        await axios.post('/api/work-orders', payload);
+        setSuccess('Work order created successfully!');
+      }
+
       setIsModalOpen(false);
+      setIsEditMode(false);
+      setEditingId(null);
       setFormData({
         title: '',
         description: '',
@@ -133,12 +143,84 @@ const WorkOrders = () => {
       fetchWorkOrders();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to create work order');
+      setError(error.response?.data?.error || `Failed to ${isEditMode ? 'update' : 'create'} work order`);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEdit = async (wo: WorkOrder) => {
+    try {
+      const response = await axios.get(`/api/work-orders/${wo.id}`);
+      const woData = response.data;
+      setFormData({
+        title: woData.title || '',
+        description: woData.description || '',
+        asset_id: woData.asset_id?.toString() || '',
+        priority: woData.priority || 'medium',
+        status: woData.status || 'open',
+        work_type: woData.work_type || 'corrective',
+        assigned_to: woData.assigned_to?.toString() || '',
+        estimated_hours: woData.estimated_hours?.toString() || '',
+        scheduled_date: woData.scheduled_date || '',
+        notes: woData.notes || '',
+      });
+      setEditingId(wo.id);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      setError('Failed to load work order details');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await axios.delete(`/api/work-orders/${id}`);
+      setSuccess('Work order deleted successfully!');
+      setDeleteConfirm(null);
+      fetchWorkOrders();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to delete work order');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleStatusUpdate = async (id: number, newStatus: string) => {
+    try {
+      const payload: any = { status: newStatus };
+      if (newStatus === 'completed') {
+        payload.completed_date = new Date().toISOString();
+      }
+      await axios.put(`/api/work-orders/${id}`, payload);
+      setSuccess(`Work order marked as ${newStatus}!`);
+      fetchWorkOrders();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to update status');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const openAddModal = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      title: '',
+      description: '',
+      asset_id: '',
+      priority: 'medium',
+      status: 'open',
+      work_type: 'corrective',
+      assigned_to: '',
+      estimated_hours: '',
+      scheduled_date: '',
+      notes: '',
+    });
+    setIsModalOpen(true);
   };
 
   if (loading) {
@@ -149,7 +231,7 @@ const WorkOrders = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Work Orders</h1>
-        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+        <button onClick={openAddModal} className="btn btn-primary">
           + New Work Order
         </button>
       </div>
@@ -233,9 +315,57 @@ const WorkOrders = () => {
                   {wo.assigned_to_name || 'Unassigned'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <Link to={`/work-orders/${wo.id}`} className="text-primary-600 hover:text-primary-900">
-                    View Details
-                  </Link>
+                  {deleteConfirm === wo.id ? (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleDelete(wo.id)}
+                        className="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleEdit(wo)}
+                          className="text-primary-600 hover:text-primary-900"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(wo.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                      {wo.status !== 'completed' && wo.status !== 'cancelled' && (
+                        <div className="flex items-center space-x-2">
+                          {wo.status !== 'in_progress' && (
+                            <button
+                              onClick={() => handleStatusUpdate(wo.id, 'in_progress')}
+                              className="text-yellow-600 hover:text-yellow-900 text-xs"
+                            >
+                              Start
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleStatusUpdate(wo.id, 'completed')}
+                            className="text-green-600 hover:text-green-900 text-xs"
+                          >
+                            Complete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -248,8 +378,16 @@ const WorkOrders = () => {
         )}
       </div>
 
-      {/* Add Work Order Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New Work Order">
+      {/* Add/Edit Work Order Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setIsEditMode(false);
+          setEditingId(null);
+        }}
+        title={isEditMode ? "Edit Work Order" : "Create New Work Order"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -372,11 +510,19 @@ const WorkOrders = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsEditMode(false);
+                setEditingId(null);
+              }}
+              className="btn btn-secondary"
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Create Work Order
+              {isEditMode ? 'Update Work Order' : 'Create Work Order'}
             </button>
           </div>
         </form>

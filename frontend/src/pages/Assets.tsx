@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../components/Modal';
 
@@ -25,6 +24,9 @@ const Assets = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', category: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     asset_tag: '',
@@ -68,9 +70,16 @@ const Assets = () => {
     setSuccess('');
 
     try {
-      await axios.post('/api/assets', formData);
-      setSuccess('Asset created successfully!');
+      if (isEditMode && editingId) {
+        await axios.put(`/api/assets/${editingId}`, formData);
+        setSuccess('Asset updated successfully!');
+      } else {
+        await axios.post('/api/assets', formData);
+        setSuccess('Asset created successfully!');
+      }
       setIsModalOpen(false);
+      setIsEditMode(false);
+      setEditingId(null);
       setFormData({
         name: '',
         asset_tag: '',
@@ -89,12 +98,73 @@ const Assets = () => {
       fetchAssets();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to create asset');
+      setError(error.response?.data?.error || `Failed to ${isEditMode ? 'update' : 'create'} asset`);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEdit = async (asset: Asset) => {
+    try {
+      const response = await axios.get(`/api/assets/${asset.id}`);
+      const assetData = response.data;
+      setFormData({
+        name: assetData.name || '',
+        asset_tag: assetData.asset_tag || '',
+        category: assetData.category || '',
+        location: assetData.location || '',
+        manufacturer: assetData.manufacturer || '',
+        model: assetData.model || '',
+        serial_number: assetData.serial_number || '',
+        purchase_date: assetData.purchase_date || '',
+        warranty_expiry: assetData.warranty_expiry || '',
+        status: assetData.status || 'operational',
+        criticality: assetData.criticality || 'medium',
+        description: assetData.description || '',
+        notes: assetData.notes || '',
+      });
+      setEditingId(asset.id);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      setError('Failed to load asset details');
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await axios.delete(`/api/assets/${id}`);
+      setSuccess('Asset deleted successfully!');
+      setDeleteConfirm(null);
+      fetchAssets();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to delete asset');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const openAddModal = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      name: '',
+      asset_tag: '',
+      category: '',
+      location: '',
+      manufacturer: '',
+      model: '',
+      serial_number: '',
+      purchase_date: '',
+      warranty_expiry: '',
+      status: 'operational',
+      criticality: 'medium',
+      description: '',
+      notes: '',
+    });
+    setIsModalOpen(true);
   };
 
   if (loading) {
@@ -105,7 +175,7 @@ const Assets = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Assets</h1>
-        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+        <button onClick={openAddModal} className="btn btn-primary">
           + Add Asset
         </button>
       </div>
@@ -178,9 +248,37 @@ const Assets = () => {
                   {asset.criticality || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <Link to={`/assets/${asset.id}`} className="text-primary-600 hover:text-primary-900">
-                    View Details
-                  </Link>
+                  {deleteConfirm === asset.id ? (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleDelete(asset.id)}
+                        className="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleEdit(asset)}
+                        className="text-primary-600 hover:text-primary-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(asset.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -193,8 +291,16 @@ const Assets = () => {
         )}
       </div>
 
-      {/* Add Asset Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Asset">
+      {/* Add/Edit Asset Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setIsEditMode(false);
+          setEditingId(null);
+        }}
+        title={isEditMode ? "Edit Asset" : "Add New Asset"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -361,11 +467,19 @@ const Assets = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsEditMode(false);
+                setEditingId(null);
+              }}
+              className="btn btn-secondary"
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Create Asset
+              {isEditMode ? 'Update Asset' : 'Create Asset'}
             </button>
           </div>
         </form>

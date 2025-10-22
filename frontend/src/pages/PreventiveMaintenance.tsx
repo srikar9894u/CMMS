@@ -35,6 +35,9 @@ const PreventiveMaintenance = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     asset_id: '',
     title: '',
@@ -98,9 +101,17 @@ const PreventiveMaintenance = () => {
         assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
       };
 
-      await axios.post('/api/preventive-maintenance', payload);
-      setSuccess('PM schedule created successfully!');
+      if (isEditMode && editingId) {
+        await axios.put(`/api/preventive-maintenance/${editingId}`, payload);
+        setSuccess('PM schedule updated successfully!');
+      } else {
+        await axios.post('/api/preventive-maintenance', payload);
+        setSuccess('PM schedule created successfully!');
+      }
+
       setIsModalOpen(false);
+      setIsEditMode(false);
+      setEditingId(null);
       setFormData({
         asset_id: '',
         title: '',
@@ -113,7 +124,7 @@ const PreventiveMaintenance = () => {
       fetchSchedules();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to create PM schedule');
+      setError(error.response?.data?.error || `Failed to ${isEditMode ? 'update' : 'create'} PM schedule`);
     }
   };
 
@@ -121,16 +132,71 @@ const PreventiveMaintenance = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const completeTask = async (id: number) => {
-    if (!confirm('Mark this preventive maintenance task as complete?')) return;
+  const handleEdit = async (schedule: PMSchedule) => {
+    setFormData({
+      asset_id: schedule.asset_id.toString(),
+      title: schedule.title,
+      description: schedule.description || '',
+      frequency: schedule.frequency,
+      frequency_value: schedule.frequency_value.toString(),
+      next_due: schedule.next_due || '',
+      assigned_to: schedule.assigned_to?.toString() || '',
+    });
+    setEditingId(schedule.id);
+    setIsEditMode(true);
+    setIsModalOpen(true);
+  };
 
+  const handleDelete = async (id: number) => {
+    try {
+      await axios.delete(`/api/preventive-maintenance/${id}`);
+      setSuccess('PM schedule deleted successfully!');
+      setDeleteConfirm(null);
+      fetchSchedules();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to delete PM schedule');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleToggleActive = async (id: number, currentStatus: boolean) => {
+    try {
+      await axios.put(`/api/preventive-maintenance/${id}`, { is_active: !currentStatus });
+      setSuccess(`PM schedule ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
+      fetchSchedules();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError('Failed to update PM schedule status');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const completeTask = async (id: number) => {
     try {
       await axios.post(`/api/preventive-maintenance/${id}/complete`);
+      setSuccess('PM task completed and rescheduled!');
       fetchSchedules();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      console.error('Failed to complete PM task:', error);
-      alert('Failed to complete task');
+      setError('Failed to complete PM task');
+      setTimeout(() => setError(''), 3000);
     }
+  };
+
+  const openAddModal = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      asset_id: '',
+      title: '',
+      description: '',
+      frequency: 'monthly',
+      frequency_value: '1',
+      next_due: '',
+      assigned_to: '',
+    });
+    setIsModalOpen(true);
   };
 
   const isOverdue = (nextDue: string) => {
@@ -152,7 +218,7 @@ const PreventiveMaintenance = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Preventive Maintenance</h1>
-        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">+ New Schedule</button>
+        <button onClick={openAddModal} className="btn btn-primary">+ New Schedule</button>
       </div>
 
       {success && (
@@ -214,13 +280,54 @@ const PreventiveMaintenance = () => {
                     <span className="badge bg-gray-100 text-gray-800">Inactive</span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                  <button
-                    onClick={() => completeTask(schedule.id)}
-                    className="text-primary-600 hover:text-primary-900"
-                  >
-                    Complete
-                  </button>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {deleteConfirm === schedule.id ? (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleDelete(schedule.id)}
+                        className="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => completeTask(schedule.id)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Complete
+                        </button>
+                        <button
+                          onClick={() => handleEdit(schedule)}
+                          className="text-primary-600 hover:text-primary-900"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleToggleActive(schedule.id, schedule.is_active)}
+                          className="text-yellow-600 hover:text-yellow-900 text-xs"
+                        >
+                          {schedule.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(schedule.id)}
+                          className="text-red-600 hover:text-red-900 text-xs"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -233,8 +340,16 @@ const PreventiveMaintenance = () => {
         )}
       </div>
 
-      {/* Add PM Schedule Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create PM Schedule">
+      {/* Add/Edit PM Schedule Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setIsEditMode(false);
+          setEditingId(null);
+        }}
+        title={isEditMode ? "Edit PM Schedule" : "Create PM Schedule"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -344,11 +459,19 @@ const PreventiveMaintenance = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsEditMode(false);
+                setEditingId(null);
+              }}
+              className="btn btn-secondary"
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Create Schedule
+              {isEditMode ? 'Update Schedule' : 'Create Schedule'}
             </button>
           </div>
         </form>
