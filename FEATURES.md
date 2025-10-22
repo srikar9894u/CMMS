@@ -77,26 +77,32 @@ This CMMS application is now **feature-complete** with all modern CMMS capabilit
   - Automatic reschedule after completion
 
 ### 5. **52-Week PPM Calendar** 📅 ⭐ *Featured*
-- **Visual Calendar View**
-  - Full year overview (52 weeks)
-  - Week-by-week timeline
-  - All PM tasks plotted on calendar grid
+- **Quarterly Visual Layout**
+  - Full year overview organized by quarters
+  - 4 columns: Q1, Q2, Q3, Q4 (each covering 13 weeks)
+  - 4 rows: Weekly, Monthly, Quarterly, Yearly tasks
+  - Week ranges and date spans for each quarter
 - **Color-Coded System**
-  - 🔵 Blue: Weekly tasks
-  - 🟢 Green: Monthly tasks
-  - 🟡 Yellow: Quarterly tasks
-  - 🟣 Purple: Yearly tasks
-  - 🔴 Red: Overdue tasks
+  - 🔵 Blue row: Weekly tasks
+  - 🟢 Green row: Monthly tasks
+  - 🟡 Yellow row: Quarterly tasks
+  - 🟣 Purple row: Yearly tasks
+  - 🔴 Red highlight: Overdue tasks
+- **Task Cards**
+  - Asset name and task title
+  - Week number indicator (W1-W52)
+  - Due date display
+  - Overdue highlighting
 - **Interactive Features**
-  - Hover tooltips with task details
+  - Hover tooltips with full task details
   - Year selector (previous, current, next year)
-  - Summary statistics
+  - Summary statistics by frequency type
   - Upcoming tasks view (next 4 weeks)
   - Asset and task information display
 - **Legend and Navigation**
-  - Clear frequency legend
-  - Easy week identification (W1-W52)
-  - Date labels for each week
+  - Clear frequency legend with color indicators
+  - Quarter identification with week ranges
+  - Date labels for quarter start/end
 
 ### 6. **Inventory Management** 📦
 - **Inventory Tracking**

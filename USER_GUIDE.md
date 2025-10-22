@@ -102,23 +102,33 @@ The Dashboard is your central hub showing:
 
 ### Viewing the Calendar
 1. Click **"52-Week Calendar"** in the sidebar
-2. See all PM tasks plotted across the year
-3. Each row = One PM schedule
-4. Each column = One week (W1 through W52)
+2. See all PM tasks organized quarterly
+3. Layout structure:
+   - **4 Columns**: Q1, Q2, Q3, Q4 (each covering 13 weeks)
+   - **4 Rows**: Weekly, Monthly, Quarterly, and Yearly tasks
+4. Each quarter shows the week range and dates
 
-### Understanding the Colors
-- **Blue blocks**: Weekly PM tasks
-- **Green blocks**: Monthly PM tasks
-- **Yellow blocks**: Quarterly PM tasks
-- **Purple blocks**: Yearly PM tasks
-- **Red blocks with border**: Overdue tasks
+### Understanding the Layout
+- **Row 1 (Blue)**: Weekly PM tasks scheduled in each quarter
+- **Row 2 (Green)**: Monthly PM tasks scheduled in each quarter
+- **Row 3 (Yellow)**: Quarterly PM tasks scheduled in each quarter
+- **Row 4 (Purple)**: Yearly PM tasks scheduled in each quarter
+- **Red highlighting**: Overdue tasks with red background
+
+### Task Cards
+Each task card shows:
+- Asset name and task title
+- Week number (W1-W52) when it's due
+- Due date
+- Red highlighting if overdue
 
 ### Using the Calendar
-- Hover over colored blocks to see task details
+- Hover over task cards to see full details (asset, task, due date, assigned technician, frequency)
 - Use year selector to view different years
 - Check summary statistics at bottom
-- Review "Upcoming Tasks" for next 4 weeks
-- Plan technician schedules based on visual timeline
+- Review "Upcoming Tasks" section for next 4 weeks
+- Plan quarterly maintenance by viewing all tasks in each quarter
+- Balance workload by identifying busy quarters
 
 ---
 
@@ -246,10 +256,11 @@ The Dashboard is your central hub showing:
 - Messages auto-dismiss after 3 seconds
 
 ### 52-Week Calendar Tips
-- Plan quarterly maintenance by looking ahead
-- Identify busy weeks with many tasks
-- Balance workload across weeks
-- Print calendar for team planning meetings
+- Compare maintenance load across all four quarters at a glance
+- Identify quarters with heavy maintenance schedules
+- Use frequency rows to see patterns (e.g., too many monthly tasks in Q2)
+- Balance workload by reviewing task distribution across quarters
+- Print calendar for quarterly planning meetings
 
 ---
 

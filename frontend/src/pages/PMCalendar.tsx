@@ -44,12 +44,36 @@ const PMCalendar = () => {
 
   const weeks = generateWeeks();
 
-  // Get PM tasks for a specific week
-  const getTasksForWeek = (weekStart: Date) => {
+  // Define quarters with week ranges
+  const quarters = [
+    { name: 'Q1', startWeek: 1, endWeek: 13, weeks: weeks.slice(0, 13) },
+    { name: 'Q2', startWeek: 14, endWeek: 26, weeks: weeks.slice(13, 26) },
+    { name: 'Q3', startWeek: 27, endWeek: 39, weeks: weeks.slice(26, 39) },
+    { name: 'Q4', startWeek: 40, endWeek: 52, weeks: weeks.slice(39, 52) },
+  ];
+
+  // Frequency types for rows
+  const frequencyTypes = [
+    { name: 'Weekly', value: 'weekly', color: 'bg-blue-500', textColor: 'text-blue-700', bgLight: 'bg-blue-50' },
+    { name: 'Monthly', value: 'monthly', color: 'bg-green-500', textColor: 'text-green-700', bgLight: 'bg-green-50' },
+    { name: 'Quarterly', value: 'quarterly', color: 'bg-yellow-500', textColor: 'text-yellow-700', bgLight: 'bg-yellow-50' },
+    { name: 'Yearly', value: 'yearly', color: 'bg-purple-500', textColor: 'text-purple-700', bgLight: 'bg-purple-50' },
+  ];
+
+  // Get PM tasks for a specific quarter and frequency
+  const getTasksForQuarter = (quarterWeeks: Date[], frequency: string) => {
     return schedules.filter(schedule => {
+      if (schedule.frequency !== frequency) return false;
       const dueDate = new Date(schedule.next_due);
-      return isSameWeek(dueDate, weekStart, { weekStartsOn: 1 });
+      return quarterWeeks.some(week => isSameWeek(dueDate, week, { weekStartsOn: 1 }));
     });
+  };
+
+  // Get week number for a task's due date
+  const getWeekNumber = (dueDate: string) => {
+    const date = new Date(dueDate);
+    const weekIndex = weeks.findIndex(week => isSameWeek(date, week, { weekStartsOn: 1 }));
+    return weekIndex >= 0 ? weekIndex + 1 : null;
   };
 
   // Color coding based on frequency
@@ -80,7 +104,7 @@ const PMCalendar = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">52-Week PPM Calendar</h1>
-            <p className="text-gray-600 mt-1">Preventive Maintenance Schedule Overview</p>
+            <p className="text-gray-600 mt-1">Quarterly view of preventive maintenance schedules organized by frequency type</p>
           </div>
           <div className="flex items-center space-x-4">
             <select
@@ -123,22 +147,25 @@ const PMCalendar = () => {
         </div>
       </div>
 
-      {/* Calendar Grid */}
+      {/* Calendar Grid - Quarterly Layout */}
       <div className="card p-0 overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50">
-              <th className="border border-gray-200 px-4 py-2 text-left text-xs font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10 w-48">
-                Asset / Task
+              <th className="border border-gray-200 px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">
+                Frequency Type
               </th>
-              {weeks.map((week, index) => (
+              {quarters.map((quarter) => (
                 <th
-                  key={index}
-                  className="border border-gray-200 px-2 py-2 text-center text-xs font-medium text-gray-700 min-w-[60px]"
+                  key={quarter.name}
+                  className="border border-gray-200 px-4 py-4 text-center text-sm font-semibold text-gray-700"
                 >
-                  <div>W{index + 1}</div>
-                  <div className="text-[10px] text-gray-500 mt-1">
-                    {format(week, 'MMM d')}
+                  <div className="text-lg">{quarter.name}</div>
+                  <div className="text-xs text-gray-500 font-normal mt-1">
+                    Weeks {quarter.startWeek}-{quarter.endWeek}
+                  </div>
+                  <div className="text-xs text-gray-400 font-normal">
+                    {format(quarter.weeks[0], 'MMM d')} - {format(quarter.weeks[quarter.weeks.length - 1], 'MMM d')}
                   </div>
                 </th>
               ))}
@@ -147,38 +174,72 @@ const PMCalendar = () => {
           <tbody>
             {schedules.length === 0 ? (
               <tr>
-                <td colSpan={weeks.length + 1} className="border border-gray-200 px-4 py-12 text-center text-gray-500">
+                <td colSpan={5} className="border border-gray-200 px-4 py-12 text-center text-gray-500">
                   No preventive maintenance schedules found. Create schedules to see them on the calendar.
                 </td>
               </tr>
             ) : (
-              schedules.map((schedule) => (
-                <tr key={schedule.id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-3 sticky left-0 bg-white z-10">
-                    <div className="text-sm font-medium text-gray-900">{schedule.asset_name}</div>
-                    <div className="text-xs text-gray-500 mt-1">{schedule.title}</div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      Every {schedule.frequency_value} {schedule.frequency}
+              frequencyTypes.map((freqType) => (
+                <tr key={freqType.value} className={`${freqType.bgLight} hover:opacity-80 transition-opacity`}>
+                  <td className="border border-gray-200 px-6 py-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-4 h-4 ${freqType.color} rounded`}></div>
+                      <span className={`text-sm font-semibold ${freqType.textColor}`}>
+                        {freqType.name}
+                      </span>
                     </div>
                   </td>
-                  {weeks.map((week, weekIndex) => {
-                    const tasksThisWeek = getTasksForWeek(week).filter(t => t.id === schedule.id);
-                    const hasTask = tasksThisWeek.length > 0;
-                    const taskIsOverdue = hasTask && isOverdue(tasksThisWeek[0].next_due);
+                  {quarters.map((quarter) => {
+                    const tasks = getTasksForQuarter(quarter.weeks, freqType.value);
 
                     return (
                       <td
-                        key={weekIndex}
-                        className="border border-gray-200 px-1 py-1 text-center relative"
+                        key={quarter.name}
+                        className="border border-gray-200 px-3 py-4 align-top"
                       >
-                        {hasTask && (
-                          <div
-                            className={`w-full h-8 rounded ${
-                              taskIsOverdue ? 'bg-red-500 border-2 border-red-700' : getFrequencyColor(schedule.frequency)
-                            } flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
-                            title={`${schedule.asset_name} - ${schedule.title}\nDue: ${format(new Date(schedule.next_due), 'MMM d, yyyy')}\nAssigned: ${schedule.assigned_to_name || 'Unassigned'}`}
-                          >
-                            <span className="text-white text-xs font-medium">PM</span>
+                        {tasks.length > 0 ? (
+                          <div className="space-y-2">
+                            {tasks.map((task) => {
+                              const weekNum = getWeekNumber(task.next_due);
+                              const taskOverdue = isOverdue(task.next_due);
+
+                              return (
+                                <div
+                                  key={task.id}
+                                  className={`p-2 rounded-lg border-l-4 ${
+                                    taskOverdue
+                                      ? 'bg-red-50 border-red-500'
+                                      : 'bg-white border-gray-300'
+                                  } shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
+                                  title={`Asset: ${task.asset_name}\nTask: ${task.title}\nDue: ${format(new Date(task.next_due), 'MMM d, yyyy')}\nAssigned: ${task.assigned_to_name || 'Unassigned'}\nEvery: ${task.frequency_value} ${task.frequency}`}
+                                >
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-xs font-semibold text-gray-900 truncate">
+                                        {task.asset_name}
+                                      </div>
+                                      <div className="text-xs text-gray-600 truncate mt-0.5">
+                                        {task.title}
+                                      </div>
+                                    </div>
+                                    <div className="ml-2">
+                                      <span className={`inline-block px-1.5 py-0.5 text-xs font-medium rounded ${
+                                        taskOverdue ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
+                                      }`}>
+                                        W{weekNum}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {format(new Date(task.next_due), 'MMM d')}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-center text-xs text-gray-400 py-4">
+                            No tasks
                           </div>
                         )}
                       </td>
