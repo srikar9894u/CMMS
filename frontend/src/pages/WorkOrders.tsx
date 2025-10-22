@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Modal from '../components/Modal';
 
 interface WorkOrder {
   id: number;
@@ -11,6 +12,17 @@ interface WorkOrder {
   work_type: string;
   assigned_to_name: string;
   created_at: string;
+}
+
+interface Asset {
+  id: number;
+  name: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  full_name: string;
 }
 
 const priorityColors: Record<string, string> = {
@@ -31,11 +43,30 @@ const statusColors: Record<string, string> = {
 
 const WorkOrders = () => {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', priority: '' });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    asset_id: '',
+    priority: 'medium',
+    status: 'open',
+    work_type: 'corrective',
+    assigned_to: '',
+    estimated_hours: '',
+    scheduled_date: '',
+    notes: '',
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     fetchWorkOrders();
+    fetchAssets();
+    fetchUsers();
   }, [filter]);
 
   const fetchWorkOrders = async () => {
@@ -53,6 +84,63 @@ const WorkOrders = () => {
     }
   };
 
+  const fetchAssets = async () => {
+    try {
+      const response = await axios.get('/api/assets');
+      setAssets(response.data);
+    } catch (error) {
+      console.error('Failed to fetch assets:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('/api/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    try {
+      const payload = {
+        ...formData,
+        asset_id: formData.asset_id ? parseInt(formData.asset_id) : null,
+        assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
+        estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : null,
+      };
+
+      await axios.post('/api/work-orders', payload);
+      setSuccess('Work order created successfully!');
+      setIsModalOpen(false);
+      setFormData({
+        title: '',
+        description: '',
+        asset_id: '',
+        priority: 'medium',
+        status: 'open',
+        work_type: 'corrective',
+        assigned_to: '',
+        estimated_hours: '',
+        scheduled_date: '',
+        notes: '',
+      });
+      fetchWorkOrders();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to create work order');
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -61,8 +149,16 @@ const WorkOrders = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Work Orders</h1>
-        <button className="btn btn-primary">+ New Work Order</button>
+        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+          + New Work Order
+        </button>
       </div>
+
+      {success && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          {success}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="card mb-6">
@@ -151,6 +247,140 @@ const WorkOrders = () => {
           </div>
         )}
       </div>
+
+      {/* Add Work Order Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New Work Order">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              className="input"
+              required
+              placeholder="Brief description of the work"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Asset</label>
+              <select name="asset_id" value={formData.asset_id} onChange={handleChange} className="input">
+                <option value="">No asset selected</option>
+                {assets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <select name="assigned_to" value={formData.assigned_to} onChange={handleChange} className="input">
+                <option value="">Unassigned</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.full_name || user.username}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Work Type <span className="text-red-500">*</span>
+              </label>
+              <select name="work_type" value={formData.work_type} onChange={handleChange} className="input" required>
+                <option value="corrective">Corrective</option>
+                <option value="preventive">Preventive</option>
+                <option value="inspection">Inspection</option>
+                <option value="project">Project</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Priority <span className="text-red-500">*</span>
+              </label>
+              <select name="priority" value={formData.priority} onChange={handleChange} className="input" required>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Hours</label>
+              <input
+                type="number"
+                name="estimated_hours"
+                value={formData.estimated_hours}
+                onChange={handleChange}
+                className="input"
+                step="0.5"
+                min="0"
+                placeholder="Hours"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
+              <input
+                type="datetime-local"
+                name="scheduled_date"
+                value={formData.scheduled_date}
+                onChange={handleChange}
+                className="input"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+              className="input"
+              placeholder="Detailed description of the work to be done"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              rows={2}
+              className="input"
+              placeholder="Additional notes or instructions"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Create Work Order
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
