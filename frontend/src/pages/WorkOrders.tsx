@@ -191,22 +191,6 @@ const WorkOrders = () => {
     }
   };
 
-  const handleStatusUpdate = async (id: number, newStatus: string) => {
-    try {
-      const payload: any = { status: newStatus };
-      if (newStatus === 'completed') {
-        payload.completed_date = new Date().toISOString();
-      }
-      await axios.put(`/api/work-orders/${id}`, payload);
-      setSuccess(`Work order marked as ${newStatus}!`);
-      fetchWorkOrders();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to update status');
-      setTimeout(() => setError(''), 3000);
-    }
-  };
-
   const openAddModal = () => {
     setIsEditMode(false);
     setEditingId(null);

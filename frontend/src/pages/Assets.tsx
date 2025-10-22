@@ -221,7 +221,7 @@ const Assets = () => {
       {/* Assets Table */}
       <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm overflow-hidden`}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y ${themeColors.colors.borderLight}"}
+          <table className={`min-w-full divide-y ${themeColors.colors.borderLight}`}>
             <thead className={`${themeColors.colors.secondary}`}>
               <tr>
                 <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Asset Tag</th>
