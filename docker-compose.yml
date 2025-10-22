@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: cmms-backend
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - JWT_SECRET=change-this-to-a-secure-random-string
+      - DB_PATH=/data/database.sqlite
+      - CORS_ORIGIN=http://localhost
+    volumes:
+      - ./data:/data
+    networks:
+      - cmms-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: cmms-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - cmms-network
+    restart: unless-stopped
+
+networks:
+  cmms-network:
+    driver: bridge
+
+volumes:
+  data:
