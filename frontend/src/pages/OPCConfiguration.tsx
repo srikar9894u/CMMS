@@ -13,10 +13,7 @@ interface Asset {
 
 interface OPCConnection {
   id: number;
-  asset_id: number;
-  asset_name: string;
-  asset_tag: string;
-  category: string;
+  name: string;
   plc_type: string;
   server_url: string;
   enabled: boolean;
@@ -26,14 +23,16 @@ interface OPCConnection {
   password: string | null;
   connection_status: string;
   last_connected: string | null;
-  real_time_status: string | null;
-  last_opc_update: string | null;
   notes: string | null;
+  asset_count?: number;
 }
 
 interface OPCTag {
   id: number;
   opc_connection_id: number;
+  asset_id: number;
+  asset_name?: string;
+  asset_tag?: string;
   tag_type: string;
   tag_name: string;
   tag_address: string;
@@ -45,7 +44,7 @@ interface OPCTag {
 const OPCConfiguration = () => {
   const { themeColors } = useTheme();
   const [connections, setConnections] = useState<OPCConnection[]>([]);
-  const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
+  const [allAssets, setAllAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
@@ -56,7 +55,7 @@ const OPCConfiguration = () => {
   const [showExamples, setShowExamples] = useState(false);
 
   const [formData, setFormData] = useState({
-    asset_id: '',
+    name: '',
     plc_type: 'siemens',
     server_url: '',
     enabled: true,
@@ -68,6 +67,7 @@ const OPCConfiguration = () => {
   });
 
   const [tagFormData, setTagFormData] = useState({
+    asset_id: '',
     tag_type: 'running',
     tag_name: '',
     tag_address: '',
@@ -136,7 +136,7 @@ const OPCConfiguration = () => {
 
   useEffect(() => {
     fetchConnections();
-    fetchAvailableAssets();
+    fetchAllAssets();
   }, []);
 
   const fetchConnections = async () => {
@@ -150,12 +150,12 @@ const OPCConfiguration = () => {
     }
   };
 
-  const fetchAvailableAssets = async () => {
+  const fetchAllAssets = async () => {
     try {
-      const response = await axios.get('/api/opc/assets/without-opc');
-      setAvailableAssets(response.data);
+      const response = await axios.get('/api/opc/assets/all');
+      setAllAssets(response.data);
     } catch (error) {
-      console.error('Failed to fetch available assets:', error);
+      console.error('Failed to fetch assets:', error);
     }
   };
 
@@ -176,18 +176,17 @@ const OPCConfiguration = () => {
     try {
       if (selectedConnection) {
         await axios.put(`/api/opc/connections/${selectedConnection.id}`, formData);
-        setSuccess('OPC connection updated successfully!');
+        setSuccess('PLC connection updated successfully!');
       } else {
         await axios.post('/api/opc/connections', formData);
-        setSuccess('OPC connection created successfully!');
+        setSuccess('PLC connection created successfully!');
       }
 
       setIsModalOpen(false);
       fetchConnections();
-      fetchAvailableAssets();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to save OPC connection');
+      setError(error.response?.data?.error || 'Failed to save PLC connection');
     }
   };
 
@@ -197,10 +196,15 @@ const OPCConfiguration = () => {
 
     try {
       if (selectedConnection) {
-        await axios.post(`/api/opc/connections/${selectedConnection.id}/tags`, tagFormData);
+        await axios.post('/api/opc/tags', {
+          opc_connection_id: selectedConnection.id,
+          ...tagFormData,
+        });
         setSuccess('Tag added successfully!');
         fetchTags(selectedConnection.id);
+        fetchConnections(); // Refresh to update asset count
         setTagFormData({
+          asset_id: '',
           tag_type: 'running',
           tag_name: '',
           tag_address: '',
@@ -224,7 +228,7 @@ const OPCConfiguration = () => {
   const handleEdit = (connection: OPCConnection) => {
     setSelectedConnection(connection);
     setFormData({
-      asset_id: connection.asset_id.toString(),
+      name: connection.name,
       plc_type: connection.plc_type,
       server_url: connection.server_url,
       enabled: connection.enabled,
@@ -238,13 +242,12 @@ const OPCConfiguration = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this OPC connection?')) return;
+    if (!window.confirm('Are you sure you want to delete this PLC connection? This will also delete all associated tags.')) return;
 
     try {
       await axios.delete(`/api/opc/connections/${id}`);
-      setSuccess('OPC connection deleted successfully!');
+      setSuccess('PLC connection deleted successfully!');
       fetchConnections();
-      fetchAvailableAssets();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
       setError(error.response?.data?.error || 'Failed to delete connection');
@@ -259,6 +262,7 @@ const OPCConfiguration = () => {
       setSuccess('Tag deleted successfully!');
       if (selectedConnection) {
         fetchTags(selectedConnection.id);
+        fetchConnections(); // Refresh to update asset count
       }
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
@@ -269,7 +273,7 @@ const OPCConfiguration = () => {
   const openAddModal = () => {
     setSelectedConnection(null);
     setFormData({
-      asset_id: '',
+      name: '',
       plc_type: 'siemens',
       server_url: '',
       enabled: true,
@@ -291,17 +295,6 @@ const OPCConfiguration = () => {
     return colors[status] || colors.disconnected;
   };
 
-  const getRealTimeStatusBadge = (status: string | null) => {
-    if (!status) return 'bg-gray-100 text-gray-800';
-    const colors: Record<string, string> = {
-      running: 'bg-green-100 text-green-800',
-      trip: 'bg-red-100 text-red-800',
-      off: 'bg-gray-100 text-gray-800',
-      unknown: 'bg-yellow-100 text-yellow-800',
-    };
-    return colors[status] || colors.unknown;
-  };
-
   if (loading) {
     return <div className={themeColors.colors.textPrimary}>Loading...</div>;
   }
@@ -309,9 +302,14 @@ const OPCConfiguration = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-        <h1 className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>
-          OPC Connectivity
-        </h1>
+        <div>
+          <h1 className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>
+            OPC UA Connectivity
+          </h1>
+          <p className={`text-sm ${themeColors.colors.textMuted} mt-1`}>
+            Manage PLC connections and asset tag mappings
+          </p>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => setShowExamples(!showExamples)}
@@ -323,7 +321,7 @@ const OPCConfiguration = () => {
             onClick={openAddModal}
             className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-2 rounded-lg font-medium transition-colors`}
           >
-            + Add OPC Connection
+            + Add PLC Connection
           </button>
         </div>
       </div>
@@ -380,14 +378,14 @@ const OPCConfiguration = () => {
         </div>
       )}
 
-      {/* Connections Table */}
+      {/* PLC Connections Table */}
       <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className={`min-w-full divide-y ${themeColors.colors.borderLight}`}>
             <thead className={`${themeColors.colors.secondary}`}>
               <tr>
                 <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>
-                  Asset
+                  PLC Name
                 </th>
                 <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden md:table-cell`}>
                   PLC Type
@@ -396,10 +394,10 @@ const OPCConfiguration = () => {
                   Server URL
                 </th>
                 <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>
-                  Status
+                  Assets
                 </th>
                 <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>
-                  Real-Time
+                  Status
                 </th>
                 <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>
                   Actions
@@ -410,14 +408,19 @@ const OPCConfiguration = () => {
               {connections.map((conn) => (
                 <tr key={conn.id} className={themeColors.colors.cardHover}>
                   <td className={`px-4 sm:px-6 py-4 text-sm ${themeColors.colors.textPrimary}`}>
-                    <div className="font-medium">{conn.asset_name}</div>
-                    <div className={`text-xs ${themeColors.colors.textMuted}`}>{conn.asset_tag}</div>
+                    <div className="font-medium">{conn.name}</div>
+                    <div className={`text-xs ${themeColors.colors.textMuted}`}>
+                      Polling: {conn.polling_interval}ms
+                    </div>
                   </td>
                   <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${themeColors.colors.textMuted} capitalize hidden md:table-cell`}>
                     {conn.plc_type.replace('_', ' ')}
                   </td>
                   <td className={`px-4 sm:px-6 py-4 text-sm ${themeColors.colors.textMuted} hidden lg:table-cell`}>
                     <div className="max-w-xs truncate">{conn.server_url}</div>
+                  </td>
+                  <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${themeColors.colors.textPrimary}`}>
+                    <span className="font-medium">{conn.asset_count || 0}</span> connected
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(conn.connection_status)}`}>
@@ -429,18 +432,13 @@ const OPCConfiguration = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRealTimeStatusBadge(conn.real_time_status)}`}>
-                      {conn.real_time_status || 'N/A'}
-                    </span>
-                  </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                       <button
                         onClick={() => handleManageTags(conn)}
                         className={themeColors.colors.primaryText}
                       >
-                        Tags
+                        Manage Tags
                       </button>
                       <button
                         onClick={() => handleEdit(conn)}
@@ -463,39 +461,33 @@ const OPCConfiguration = () => {
         </div>
         {connections.length === 0 && (
           <div className={`text-center py-12 ${themeColors.colors.textMuted}`}>
-            No OPC connections configured. Click "Add OPC Connection" to get started.
+            No PLC connections configured. Click "Add PLC Connection" to get started.
           </div>
         )}
       </div>
 
-      {/* Add/Edit Connection Modal */}
+      {/* Add/Edit PLC Connection Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedConnection ? 'Edit OPC Connection' : 'Add OPC Connection'}
+        title={selectedConnection ? 'Edit PLC Connection' : 'Add PLC Connection'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>
-              Asset <span className={themeColors.colors.errorText}>*</span>
+              PLC Name <span className={themeColors.colors.errorText}>*</span>
             </label>
-            <select
-              value={formData.asset_id}
-              onChange={(e) => setFormData({ ...formData, asset_id: e.target.value })}
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              placeholder="Production PLC"
               required
-              disabled={!!selectedConnection}
-            >
-              <option value="">Select Asset</option>
-              {selectedConnection && (
-                <option value={selectedConnection.asset_id}>{selectedConnection.asset_name}</option>
-              )}
-              {availableAssets.map((asset) => (
-                <option key={asset.id} value={asset.id}>
-                  {asset.name} ({asset.asset_tag})
-                </option>
-              ))}
-            </select>
+            />
+            <p className={`text-xs ${themeColors.colors.textMuted} mt-1`}>
+              A descriptive name for this PLC connection
+            </p>
           </div>
 
           <div>
@@ -596,6 +588,7 @@ const OPCConfiguration = () => {
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
               rows={2}
+              placeholder="Additional notes about this PLC connection"
             />
           </div>
 
@@ -634,12 +627,34 @@ const OPCConfiguration = () => {
       <Modal
         isOpen={isTagModalOpen}
         onClose={() => setIsTagModalOpen(false)}
-        title={`Manage Tags - ${selectedConnection?.asset_name}`}
+        title={`Manage Tags - ${selectedConnection?.name}`}
       >
         <div className="space-y-6">
           {/* Add Tag Form */}
           <form onSubmit={handleTagSubmit} className="space-y-4 pb-4 border-b">
             <h3 className={`text-lg font-semibold ${themeColors.colors.textPrimary}`}>Add New Tag</h3>
+
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-1`}>
+                Asset <span className={themeColors.colors.errorText}>*</span>
+              </label>
+              <select
+                value={tagFormData.asset_id}
+                onChange={(e) => setTagFormData({ ...tagFormData, asset_id: e.target.value })}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                required
+              >
+                <option value="">Select Asset</option>
+                {allAssets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.name} ({asset.asset_tag})
+                  </option>
+                ))}
+              </select>
+              <p className={`text-xs ${themeColors.colors.textMuted} mt-1`}>
+                Select which asset this tag monitors
+              </p>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -754,7 +769,7 @@ const OPCConfiguration = () => {
 
             {tags.length === 0 ? (
               <p className={`text-sm ${themeColors.colors.textMuted} text-center py-4`}>
-                No tags configured. Add tags above to start monitoring.
+                No tags configured. Add tags above to start monitoring assets.
               </p>
             ) : (
               <div className="space-y-2">
@@ -764,7 +779,10 @@ const OPCConfiguration = () => {
                     className={`${themeColors.colors.secondary} p-3 rounded-lg flex justify-between items-start`}
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800`}>
+                          {tag.asset_name || `Asset ${tag.asset_id}`}
+                        </span>
                         <span className={`px-2 py-1 text-xs font-semibold rounded ${themeColors.colors.primaryText} ${themeColors.colors.secondary}`}>
                           {tag.tag_type}
                         </span>

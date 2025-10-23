@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy OPC service code
-COPY opc_client.py .
+COPY opc_service_v2.py .
 
 # Create volume for database
 VOLUME ["/data"]
@@ -21,4 +21,4 @@ VOLUME ["/data"]
 ENV DB_PATH=/data/database.sqlite
 
 # Run the OPC service
-CMD ["python", "-u", "opc_client.py"]
+CMD ["python", "-u", "opc_service_v2.py"]

@@ -1,6 +1,6 @@
 # Python OPC UA Client for CMMS
-opcua==0.98.13
-asyncua==1.0.4
-requests==2.31.0
+# Production-ready OPC UA service with subscription-based monitoring
+asyncua==1.1.0
+aiosqlite==0.19.0
 python-dotenv==1.0.0
-sqlite3-to-mysql==2.1.7
+requests==2.31.0

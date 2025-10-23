@@ -15,19 +15,38 @@ The OPC connectivity feature allows you to monitor real-time status of assets di
 ## Architecture
 
 ```
-┌─────────────┐      OPC UA       ┌──────────────┐      REST API     ┌──────────────┐
-│ PLC/SCADA   │ ◄──────────────► │ OPC Service  │ ◄────────────────► │   Backend    │
-│  (Siemens,  │    TCP/IP Port   │  (Python)    │    SQLite DB      │  (Node.js)   │
-│   AB, etc)  │      4840         │              │                   │              │
-└─────────────┘                   └──────────────┘                   └──────────────┘
-                                                                              │
-                                                                              │
-                                                                              ▼
-                                                                      ┌──────────────┐
-                                                                      │   Frontend   │
-                                                                      │   (React)    │
-                                                                      └──────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        Single PLC                            │
+│  ┌──────────────┐                                           │
+│  │  Siemens PLC │                                           │
+│  │ (Production) │                                           │
+│  └──────────────┘                                           │
+│         │ Serves tags for multiple assets                   │
+│         ├─► Motor 1 (Running, Trip, Off tags)              │
+│         ├─► Motor 2 (Running, Trip, Off tags)              │
+│         └─► Pump 1  (Running, Trip, Off tags)              │
+└─────────────────────────────────────────────────────────────┘
+                    │ OPC UA (opc.tcp://192.168.1.10:4840)
+                    ▼
+          ┌──────────────────┐
+          │   OPC Service    │
+          │    (Python)      │  ← Subscription-based monitoring
+          │  asyncua v1.1.0  │  ← Auto-reconnection
+          └──────────────────┘  ← Tag grouping by PLC
+                    │ Updates database
+                    ▼
+          ┌──────────────────┐      REST API      ┌──────────────┐
+          │    Backend       │ ◄─────────────────► │   Frontend   │
+          │   (Node.js)      │    Asset status     │   (React)    │
+          │  SQLite DB       │    Real-time view   │              │
+          └──────────────────┘                     └──────────────┘
 ```
+
+**Key Architectural Principles:**
+- **One PLC, Multiple Assets**: Single PLC connection monitors tags for multiple assets
+- **PLC-Based Configuration**: Configure PLC once, map tags to different assets
+- **Subscription-Based**: Event-driven monitoring (preferred over polling)
+- **Auto-Reconnection**: Automatic failure recovery with exponential backoff
 
 ## Features
 
@@ -76,16 +95,22 @@ pip install -r requirements.txt
 ```
 
 Requirements:
-- Python 3.8 or higher
-- opcua (OPC UA client library)
-- asyncua (Async OPC UA)
-- sqlite3
-- requests
+- Python 3.11 or higher
+- asyncua==1.1.0 (Async OPC UA with subscription support)
+- aiosqlite==0.19.0 (Async SQLite operations)
+- python-dotenv==1.0.0 (Configuration management)
 
 #### Run OPC Service Standalone
 ```bash
-python opc_client.py
+python opc_service_v2.py
 ```
+
+**Features of v2 Service:**
+- Subscription-based monitoring (event-driven)
+- Polling fallback mode
+- Automatic reconnection with exponential backoff
+- Tag grouping by PLC
+- Async/await architecture for scalability
 
 #### Run with Docker
 ```bash
@@ -130,44 +155,63 @@ Navigate to:
 
 ## Configuration Guide
 
-### Step 1: Configure OPC Connection
+### Step 1: Create PLC Connection
 
 1. Go to **OPC Configuration** page
-2. Click **"+ Add OPC Connection"**
-3. Fill in the connection details:
+2. Click **"+ Add PLC Connection"**
+3. Fill in the PLC connection details:
 
-   - **Asset**: Select the asset to monitor
-   - **PLC Type**: Choose your PLC brand
-   - **Server URL**: Enter OPC UA server address
+   - **PLC Name**: Descriptive name (e.g., "Production Floor PLC")
+   - **PLC Type**: Choose your PLC brand (Siemens, Allen Bradley, etc.)
+   - **Server URL**: Enter OPC UA server address (e.g., `opc.tcp://192.168.1.10:4840`)
    - **Polling Interval**: How often to read tags (default: 5000ms)
    - **Connection Timeout**: Max wait time (default: 10000ms)
-   - **Username/Password**: If PLC requires authentication
+   - **Username/Password**: If PLC requires authentication (optional)
+   - **Notes**: Additional information about this PLC (optional)
    - **Enabled**: Check to activate connection
 
 4. Click **"Create"**
 
-### Step 2: Configure Tags
+**Note:** One PLC connection can serve multiple assets. You don't need to create separate connections for each asset.
 
-1. Click **"Tags"** button for the connection
+### Step 2: Map Tags to Assets
+
+1. Click **"Manage Tags"** button for the PLC connection
 2. Click **"Add New Tag"**
 3. Configure each tag:
 
+   - **Asset**: Select which asset this tag monitors
    - **Tag Type**: Running, Trip, Off, or Custom
-   - **Tag Name**: Descriptive name (e.g., "Motor_Running")
-   - **Tag Address**: OPC UA NodeId (e.g., `ns=3;s="DB1"."Running"`)
+   - **Tag Name**: Descriptive name (e.g., "Motor1_Running")
+   - **Tag Address**: OPC UA NodeId (e.g., `ns=3;s="DB1"."Motor1_Run"`)
    - **Data Type**: Boolean (most common), Integer, Float, or String
    - **Invert Logic**: Check if logic is inverted (0=ON, 1=OFF)
    - **Description**: Optional notes
 
 4. Click **"Add Tag"**
-5. Repeat for Trip and Off tags
+5. Repeat for different assets and tag types
+
+**Example:** For a PLC monitoring 3 motors:
+```
+PLC: "Production Floor PLC" (opc.tcp://192.168.1.10:4840)
+  ├─► Asset: Motor 1
+  │   ├─ Running: ns=3;s="DB1"."Motor1_Run"
+  │   ├─ Trip:    ns=3;s="DB1"."Motor1_Trip"
+  │   └─ Off:     ns=3;s="DB1"."Motor1_Stop"
+  ├─► Asset: Motor 2
+  │   ├─ Running: ns=3;s="DB1"."Motor2_Run"
+  │   └─ Trip:    ns=3;s="DB1"."Motor2_Trip"
+  └─► Asset: Pump 1
+      └─ Running: ns=3;s="DB1"."Pump1_Run"
+```
 
 ### Step 3: Verify Connection
 
-1. Wait for polling interval
+1. Wait for polling interval (or service restart)
 2. Check connection status in table (should show "Connected")
-3. Navigate to **Real-Time Status** page
-4. Verify asset shows current status
+3. Check "Assets" column shows correct count
+4. Navigate to **Real-Time Status** page
+5. Verify assets show current status
 
 ## Finding PLC Tag Addresses
 
@@ -212,11 +256,27 @@ UaExpert is a free OPC UA client from Unified Automation.
 
 ### Siemens S7-1500
 
+**PLC Connection:**
 ```
+Name: "Production Floor PLC"
+Type: Siemens
 Server URL: opc.tcp://192.168.1.10:4840
-Running Tag: ns=3;s="DB_Status"."Motor1_Run"
-Trip Tag:    ns=3;s="DB_Status"."Motor1_Trip"
-Off Tag:     ns=3;s="DB_Status"."Motor1_Stop"
+```
+
+**Tag Mappings:**
+```
+Asset: Motor 1
+  Running Tag: ns=3;s="DB_Status"."Motor1_Run"
+  Trip Tag:    ns=3;s="DB_Status"."Motor1_Trip"
+  Off Tag:     ns=3;s="DB_Status"."Motor1_Stop"
+
+Asset: Motor 2
+  Running Tag: ns=3;s="DB_Status"."Motor2_Run"
+  Trip Tag:    ns=3;s="DB_Status"."Motor2_Trip"
+
+Asset: Pump 1
+  Running Tag: ns=3;s="DB_Status"."Pump1_Run"
+  Off Tag:     ns=3;s="DB_Status"."Pump1_Stop"
 ```
 
 **Finding Namespace (ns):**
@@ -229,11 +289,22 @@ Off Tag:     ns=3;s="DB_Status"."Motor1_Stop"
 
 ### Allen Bradley ControlLogix
 
+**PLC Connection:**
 ```
+Name: "Line 2 PLC"
+Type: Allen Bradley
 Server URL: opc.tcp://192.168.1.20:49320
-Running Tag: ns=2;s=Channel1.Device1.Motor_Running
-Trip Tag:    ns=2;s=Channel1.Device1.Motor_Tripped
-Off Tag:     ns=2;s=Channel1.Device1.Motor_Stopped
+```
+
+**Tag Mappings:**
+```
+Asset: Conveyor 1
+  Running Tag: ns=2;s=Channel1.Device1.Conveyor1_Running
+  Trip Tag:    ns=2;s=Channel1.Device1.Conveyor1_Fault
+
+Asset: Conveyor 2
+  Running Tag: ns=2;s=Channel1.Device1.Conveyor2_Running
+  Off Tag:     ns=2;s=Channel1.Device1.Conveyor2_Stopped
 ```
 
 **Notes:**
@@ -480,23 +551,29 @@ The OPC service uses async/await architecture:
 
 ## API Endpoints
 
-### OPC Connections
+### PLC Connections
 
 ```
-GET    /api/opc/connections           - List all OPC connections
-GET    /api/opc/connections/:id       - Get connection details
-POST   /api/opc/connections           - Create connection
-PUT    /api/opc/connections/:id       - Update connection
-DELETE /api/opc/connections/:id       - Delete connection
+GET    /api/opc/connections           - List all PLC connections (with asset count)
+GET    /api/opc/connections/:id       - Get PLC connection details
+POST   /api/opc/connections           - Create PLC connection
+PUT    /api/opc/connections/:id       - Update PLC connection
+DELETE /api/opc/connections/:id       - Delete PLC connection (cascades to tags)
 ```
 
 ### OPC Tags
 
 ```
-GET    /api/opc/connections/:id/tags  - List tags for connection
-POST   /api/opc/connections/:id/tags  - Create tag
+GET    /api/opc/connections/:id/tags  - List tags for specific PLC
+POST   /api/opc/tags                  - Create tag (requires opc_connection_id & asset_id)
 PUT    /api/opc/tags/:id              - Update tag
 DELETE /api/opc/tags/:id              - Delete tag
+```
+
+### Assets
+
+```
+GET    /api/opc/assets/all            - Get all assets (for dropdown in tag creation)
 ```
 
 ### Status Monitoring
@@ -504,17 +581,16 @@ DELETE /api/opc/tags/:id              - Delete tag
 ```
 GET    /api/opc/status/current               - Current status for all assets
 GET    /api/opc/assets/:id/status-history    - Status history for asset
-GET    /api/opc/assets/without-opc           - Assets without OPC connection
 ```
 
 ## Database Schema
 
-### opc_connections
+### opc_connections (PLC-based)
 ```sql
 id                  INTEGER PRIMARY KEY
-asset_id            INTEGER (UNIQUE, FK to assets)
+name                TEXT NOT NULL               -- NEW: PLC name (e.g., "Production PLC")
 plc_type            TEXT (siemens, allen_bradley, schneider, mitsubishi, generic_opcua)
-server_url          TEXT
+server_url          TEXT UNIQUE                 -- CHANGED: UNIQUE constraint (one connection per PLC)
 enabled             BOOLEAN
 polling_interval    INTEGER (milliseconds)
 connection_timeout  INTEGER (milliseconds)
@@ -525,12 +601,15 @@ last_connected      DATETIME
 notes               TEXT
 created_at          DATETIME
 updated_at          DATETIME
+
+-- REMOVED: asset_id (now one PLC can serve multiple assets)
 ```
 
-### opc_tags
+### opc_tags (Asset-linked tags)
 ```sql
 id                  INTEGER PRIMARY KEY
-opc_connection_id   INTEGER (FK to opc_connections)
+opc_connection_id   INTEGER (FK to opc_connections) -- Which PLC
+asset_id            INTEGER (FK to assets)          -- NEW: Which asset this tag monitors
 tag_type            TEXT (running, trip, off, custom)
 tag_name            TEXT
 tag_address         TEXT (NodeId)
@@ -539,7 +618,16 @@ invert_logic        BOOLEAN
 description         TEXT
 created_at          DATETIME
 updated_at          DATETIME
+
+-- UNIQUE constraint: One tag type per (PLC, Asset) combination
+UNIQUE(opc_connection_id, asset_id, tag_type)
 ```
+
+**Key Changes in v2 Schema:**
+- `opc_connections` now represents physical PLCs (added `name`, removed `asset_id`)
+- `opc_tags` now includes `asset_id` to map PLC tags to specific assets
+- One PLC connection can serve multiple assets
+- `server_url` is UNIQUE to prevent duplicate PLC connections
 
 ### asset_status_log
 ```sql
@@ -618,8 +706,45 @@ A: The basic implementation uses unencrypted OPC UA. For production, enable OPC 
 **Q: What if my PLC doesn't support OPC UA?**
 A: You can use an OPC UA gateway/bridge that converts other protocols (Modbus, S7, EtherNet/IP) to OPC UA.
 
+## Migration from Old Schema
+
+If you're upgrading from an earlier version with asset-based connections, the system will automatically migrate your schema on startup.
+
+**What Changes:**
+- Old: One OPC connection per asset
+- New: One PLC connection serving multiple assets
+
+**Migration Process:**
+1. Backend detects old schema (presence of `asset_id` column in `opc_connections`)
+2. Automatically drops old tables
+3. Recreates with new PLC-based schema
+4. **Important:** You'll need to reconfigure your connections and tags
+
+**Migration Checklist:**
+1. ✅ Backup your database before upgrading: `cp database.sqlite database.backup.sqlite`
+2. ✅ Note your existing PLC IPs and tag configurations
+3. ✅ Start services (migration happens automatically)
+4. ✅ Reconfigure PLC connections using new UI
+5. ✅ Map tags to assets
+
+**Benefits of New Architecture:**
+- No duplicate connections to same PLC
+- Easier to manage (configure PLC once)
+- More scalable (one connection serves multiple assets)
+- Better reflects real-world industrial architecture
+
 ## Conclusion
 
-The OPC connectivity feature provides powerful real-time monitoring capabilities, bridging the gap between CMMS and industrial automation systems. Follow this guide to configure your PLCs and start monitoring asset status in real-time.
+The OPC connectivity feature provides powerful real-time monitoring capabilities, bridging the gap between CMMS and industrial automation systems. With the new PLC-based architecture, you can efficiently monitor multiple assets from a single PLC connection.
 
-For additional support, refer to the `opc-service/README.md` for Python service details.
+**Key Improvements in v2:**
+- Subscription-based monitoring (event-driven)
+- PLC-based architecture (one PLC → many assets)
+- Automatic reconnection with data recovery
+- Improved scalability and performance
+
+Follow this guide to configure your PLCs and start monitoring asset status in real-time.
+
+For additional support, refer to:
+- `opc-service/README.md` - Python service details
+- `OPC_INTEGRATION_DESIGN.md` - Comprehensive design documentation
