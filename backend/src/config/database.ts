@@ -143,13 +143,14 @@ export const initDatabase = () => {
     )
   `);
 
-  // OPC Connections table - stores PLC connection configuration per asset
+  // OPC Connections table - stores PLC connection configuration
+  // One PLC can serve multiple assets
   db.exec(`
     CREATE TABLE IF NOT EXISTS opc_connections (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      asset_id INTEGER NOT NULL UNIQUE,
+      name TEXT NOT NULL,
       plc_type TEXT NOT NULL CHECK(plc_type IN ('siemens', 'allen_bradley', 'schneider', 'mitsubishi', 'generic_opcua')),
-      server_url TEXT NOT NULL,
+      server_url TEXT NOT NULL UNIQUE,
       enabled BOOLEAN DEFAULT 1,
       polling_interval INTEGER DEFAULT 5000,
       connection_timeout INTEGER DEFAULT 10000,
@@ -159,16 +160,17 @@ export const initDatabase = () => {
       last_connected DATETIME,
       connection_status TEXT DEFAULT 'disconnected' CHECK(connection_status IN ('connected', 'disconnected', 'error')),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
   // OPC Tags table - stores tag mappings for monitoring asset status
+  // Links specific tags from a PLC to specific assets
   db.exec(`
     CREATE TABLE IF NOT EXISTS opc_tags (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       opc_connection_id INTEGER NOT NULL,
+      asset_id INTEGER NOT NULL,
       tag_type TEXT NOT NULL CHECK(tag_type IN ('running', 'trip', 'off', 'custom')),
       tag_name TEXT NOT NULL,
       tag_address TEXT NOT NULL,
@@ -177,7 +179,9 @@ export const initDatabase = () => {
       description TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (opc_connection_id) REFERENCES opc_connections(id) ON DELETE CASCADE
+      FOREIGN KEY (opc_connection_id) REFERENCES opc_connections(id) ON DELETE CASCADE,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+      UNIQUE(opc_connection_id, asset_id, tag_type)
     )
   `);
 
@@ -195,9 +199,65 @@ export const initDatabase = () => {
     )
   `);
 
-  // Create index for faster status queries
+  // Create indexes for faster queries
   db.exec(`CREATE INDEX IF NOT EXISTS idx_asset_status_log_asset_time ON asset_status_log(asset_id, timestamp DESC)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_connections_asset ON opc_connections(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_asset ON opc_tags(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_connection ON opc_tags(opc_connection_id)`);
+
+  // Migration: Add name column to opc_connections if it doesn't exist (for migration from old schema)
+  const opcConnColumns = db.prepare("PRAGMA table_info(opc_connections)").all() as any[];
+  const hasOpcName = opcConnColumns.some((col: any) => col.name === 'name');
+  const hasAssetId = opcConnColumns.some((col: any) => col.name === 'asset_id');
+
+  if (hasAssetId && !hasOpcName) {
+    // Old schema detected - need to migrate
+    console.log('Migrating OPC schema from asset-based to PLC-based...');
+
+    // Drop old tables and recreate with new schema
+    db.exec(`DROP TABLE IF EXISTS opc_tags`);
+    db.exec(`DROP TABLE IF EXISTS opc_connections`);
+
+    // Recreate with new schema
+    db.exec(`
+      CREATE TABLE opc_connections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        plc_type TEXT NOT NULL CHECK(plc_type IN ('siemens', 'allen_bradley', 'schneider', 'mitsubishi', 'generic_opcua')),
+        server_url TEXT NOT NULL UNIQUE,
+        enabled BOOLEAN DEFAULT 1,
+        polling_interval INTEGER DEFAULT 5000,
+        connection_timeout INTEGER DEFAULT 10000,
+        username TEXT,
+        password TEXT,
+        notes TEXT,
+        last_connected DATETIME,
+        connection_status TEXT DEFAULT 'disconnected' CHECK(connection_status IN ('connected', 'disconnected', 'error')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    db.exec(`
+      CREATE TABLE opc_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        opc_connection_id INTEGER NOT NULL,
+        asset_id INTEGER NOT NULL,
+        tag_type TEXT NOT NULL CHECK(tag_type IN ('running', 'trip', 'off', 'custom')),
+        tag_name TEXT NOT NULL,
+        tag_address TEXT NOT NULL,
+        data_type TEXT DEFAULT 'boolean' CHECK(data_type IN ('boolean', 'integer', 'float', 'string')),
+        invert_logic BOOLEAN DEFAULT 0,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (opc_connection_id) REFERENCES opc_connections(id) ON DELETE CASCADE,
+        FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+        UNIQUE(opc_connection_id, asset_id, tag_type)
+      )
+    `);
+
+    console.log('OPC schema migration completed!');
+  }
 
   // Migration: Add sub_role column to users table if it doesn't exist
   const columns = db.prepare("PRAGMA table_info(users)").all() as any[];
