@@ -1,0 +1,6 @@
+# Python OPC UA Client for CMMS
+opcua==0.98.13
+asyncua==1.0.4
+requests==2.31.0
+python-dotenv==1.0.0
+sqlite3-to-mysql==2.1.7

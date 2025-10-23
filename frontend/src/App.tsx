@@ -15,6 +15,8 @@ import Inventory from './pages/Inventory';
 import Users from './pages/Users';
 import Reports from './pages/Reports';
 import LeaveManagement from './pages/LeaveManagement';
+import OPCConfiguration from './pages/OPCConfiguration';
+import RealTimeStatus from './pages/RealTimeStatus';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="users" element={<Users />} />
               <Route path="leave" element={<LeaveManagement />} />
+              <Route path="opc-config" element={<OPCConfiguration />} />
+              <Route path="real-time-status" element={<RealTimeStatus />} />
             </Route>
           </Routes>
         </Router>

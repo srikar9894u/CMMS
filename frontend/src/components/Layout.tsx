@@ -19,9 +19,11 @@ const Layout = () => {
     { name: 'Inventory', path: '/inventory', icon: '📦' },
     { name: 'Reports', path: '/reports', icon: '📈' },
     { name: 'Leave Management', path: '/leave', icon: '🏖️' },
+    { name: 'Real-Time Status', path: '/real-time-status', icon: '🔴' },
   ];
 
   if (user?.role === 'admin' || user?.role === 'manager') {
+    navigation.push({ name: 'OPC Configuration', path: '/opc-config', icon: '🔌' });
     navigation.push({ name: 'Users', path: '/users', icon: '👥' });
   }
 
