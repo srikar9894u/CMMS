@@ -143,6 +143,62 @@ export const initDatabase = () => {
     )
   `);
 
+  // OPC Connections table - stores PLC connection configuration per asset
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS opc_connections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      asset_id INTEGER NOT NULL UNIQUE,
+      plc_type TEXT NOT NULL CHECK(plc_type IN ('siemens', 'allen_bradley', 'schneider', 'mitsubishi', 'generic_opcua')),
+      server_url TEXT NOT NULL,
+      enabled BOOLEAN DEFAULT 1,
+      polling_interval INTEGER DEFAULT 5000,
+      connection_timeout INTEGER DEFAULT 10000,
+      username TEXT,
+      password TEXT,
+      notes TEXT,
+      last_connected DATETIME,
+      connection_status TEXT DEFAULT 'disconnected' CHECK(connection_status IN ('connected', 'disconnected', 'error')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE
+    )
+  `);
+
+  // OPC Tags table - stores tag mappings for monitoring asset status
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS opc_tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      opc_connection_id INTEGER NOT NULL,
+      tag_type TEXT NOT NULL CHECK(tag_type IN ('running', 'trip', 'off', 'custom')),
+      tag_name TEXT NOT NULL,
+      tag_address TEXT NOT NULL,
+      data_type TEXT DEFAULT 'boolean' CHECK(data_type IN ('boolean', 'integer', 'float', 'string')),
+      invert_logic BOOLEAN DEFAULT 0,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (opc_connection_id) REFERENCES opc_connections(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Asset Status Log table - tracks real-time status history
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS asset_status_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      asset_id INTEGER NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('running', 'trip', 'off', 'unknown')),
+      running_bit BOOLEAN,
+      trip_bit BOOLEAN,
+      off_bit BOOLEAN,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Create index for faster status queries
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_asset_status_log_asset_time ON asset_status_log(asset_id, timestamp DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_connections_asset ON opc_connections(asset_id)`);
+
   // Migration: Add sub_role column to users table if it doesn't exist
   const columns = db.prepare("PRAGMA table_info(users)").all() as any[];
   const hasSubRole = columns.some((col: any) => col.name === 'sub_role');
@@ -165,6 +221,21 @@ export const initDatabase = () => {
   if (!hasPmScheduleId) {
     db.exec(`ALTER TABLE work_orders ADD COLUMN pm_schedule_id INTEGER REFERENCES preventive_maintenance(id)`);
     console.log('Added pm_schedule_id column to work_orders table');
+  }
+
+  // Migration: Add real_time_status column to assets table if it doesn't exist
+  const assetColumns = db.prepare("PRAGMA table_info(assets)").all() as any[];
+  const hasRealTimeStatus = assetColumns.some((col: any) => col.name === 'real_time_status');
+  const hasLastOpcUpdate = assetColumns.some((col: any) => col.name === 'last_opc_update');
+
+  if (!hasRealTimeStatus) {
+    db.exec(`ALTER TABLE assets ADD COLUMN real_time_status TEXT CHECK(real_time_status IN ('running', 'trip', 'off', 'unknown', NULL))`);
+    console.log('Added real_time_status column to assets table');
+  }
+
+  if (!hasLastOpcUpdate) {
+    db.exec(`ALTER TABLE assets ADD COLUMN last_opc_update DATETIME`);
+    console.log('Added last_opc_update column to assets table');
   }
 
   // Create default admin user if users table is empty
