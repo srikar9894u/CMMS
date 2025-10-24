@@ -1,0 +1,97 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║           INSTALL SNAP7.DLL FOR S7-416 CONNECTION                    ║
+║                    SIMPLE STEP-BY-STEP                               ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+YOU NEED TO DOWNLOAD ONE FILE: snap7.dll
+
+═══════════════════════════════════════════════════════════════════════
+
+STEP 1: DOWNLOAD SNAP7.DLL
+---------------------------
+
+1. Open this link in your browser:
+   https://github.com/Davinci/snap7/releases
+
+2. Click on "snap7-full-1.4.2.7z" to download
+   (Or latest version if different)
+
+3. Extract the .7z file (use 7-Zip or WinRAR)
+
+
+STEP 2: FIND SNAP7.DLL IN THE EXTRACTED FILES
+----------------------------------------------
+
+After extracting, navigate to:
+   snap7-full-1.4.2\release\Windows\Win64-x64\
+
+You'll see: snap7.dll
+
+
+STEP 3: COPY SNAP7.DLL TO YOUR CMMS FOLDER
+-------------------------------------------
+
+Copy snap7.dll to:
+   C:\Users\Srikar.Tanukula\CMMS\opc-service\
+
+(Same folder where s7_service.py is)
+
+
+STEP 4: VERIFY IT WORKS
+------------------------
+
+Open Command Prompt in the opc-service folder and run:
+
+   python -c "import snap7; print('SUCCESS!')"
+
+If you see "SUCCESS!" - you're done!
+
+
+═══════════════════════════════════════════════════════════════════════
+
+ALTERNATIVE: USE THE BATCH SCRIPT
+
+Run this in the opc-service folder:
+   download-snap7.bat
+
+It will guide you through the process automatically.
+
+═══════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING:
+---------------
+
+If Step 4 doesn't work, try copying snap7.dll to:
+
+Option A - Python folder:
+   1. Run: where python
+   2. Copy snap7.dll to that folder
+
+Option B - System folder (requires admin):
+   1. Right-click Command Prompt → Run as Administrator
+   2. Run: copy snap7.dll C:\Windows\System32\
+
+
+═══════════════════════════════════════════════════════════════════════
+
+AFTER INSTALLING SNAP7.DLL:
+
+You can run the S7 service:
+   cd C:\Users\Srikar.Tanukula\CMMS\opc-service
+   python s7_service.py
+
+Then configure your S7-416 connection in CMMS!
+
+═══════════════════════════════════════════════════════════════════════
+
+DIRECT DOWNLOAD LINK (if above doesn't work):
+https://sourceforge.net/projects/snap7/files/1.4.2/snap7-full-1.4.2.7z/download
+
+═══════════════════════════════════════════════════════════════════════
+
+NEED HELP?
+Share these details:
+1. Output of: where python
+2. Output of: python -c "import platform; print(platform.architecture())"
+3. Did you extract snap7.dll?
+4. Where did you copy it?
