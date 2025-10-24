@@ -1,0 +1,190 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║          FIX LOGIN ISSUE - WINDOWS INSTRUCTIONS                      ║
+║                  "Login failed. Please try again."                   ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+QUICK FIX FOR WINDOWS:
+=====================================================================
+
+Open Command Prompt or PowerShell in the CMMS folder and run:
+
+    fix-login.bat
+
+OR run the manual commands below:
+
+=====================================================================
+MANUAL FIX - RUN THESE COMMANDS ONE BY ONE:
+=====================================================================
+
+Step 1: Check if containers are running
+----------------------------------------
+docker compose ps
+
+You should see:
+  cmms-backend    Up
+  cmms-frontend   Up
+
+
+Step 2: Check backend logs
+----------------------------------------
+docker compose logs backend
+
+Look for these messages:
+  ✓ "Database initialized successfully"
+  ✓ "Default admin user created: admin/admin123"
+  ✓ "CMMS Backend API running on port 3000"
+
+
+Step 3: Test backend health
+----------------------------------------
+curl http://localhost:3000/health
+
+Should return:
+  {"status":"ok","timestamp":"..."}
+
+
+Step 4: Test login API
+----------------------------------------
+curl -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"admin123\"}"
+
+If successful, you'll see a token.
+If it fails, continue to Step 5.
+
+
+Step 5: Recreate database (if login test failed)
+----------------------------------------
+⚠️  WARNING: This deletes all data!
+
+docker compose down
+del /f data\database.sqlite
+docker compose up -d
+
+Wait 15 seconds, then try logging in again.
+
+
+Step 6: Complete rebuild (if nothing works)
+----------------------------------------
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+
+Wait 1-2 minutes, then try logging in.
+
+
+=====================================================================
+ALTERNATIVE METHODS (if CMD doesn't work):
+=====================================================================
+
+Method 1: Use Git Bash
+----------------------
+1. Install Git for Windows: https://git-scm.com/download/win
+2. Right-click in CMMS folder → "Git Bash Here"
+3. Run: ./fix-login.sh
+
+
+Method 2: Use PowerShell
+------------------------
+1. Open PowerShell in CMMS folder
+2. Run: bash fix-login.sh
+
+(Requires Git Bash to be installed)
+
+
+Method 3: Use Docker Desktop
+----------------------------
+1. Open Docker Desktop
+2. Go to Containers tab
+3. Click on cmms-backend container
+4. Look at logs for errors
+5. Click "Restart" button
+
+
+=====================================================================
+VERIFY IT WORKS:
+=====================================================================
+
+After running the fix, check these:
+
+1. Containers running:
+   docker compose ps
+   → All should show "Up"
+
+2. Backend healthy:
+   curl http://localhost:3000/health
+   → Should return {"status":"ok"}
+
+3. Database exists:
+   dir data\database.sqlite
+   → Should show file size ~80KB
+
+4. Try logging in:
+   → Open: http://localhost
+   → Username: admin
+   → Password: admin123
+
+
+=====================================================================
+MOST COMMON FIX (Works 90% of the time):
+=====================================================================
+
+Just run these 3 commands:
+
+    docker compose down
+    del /f data\database.sqlite
+    docker compose up -d
+
+Wait 15 seconds, then login at http://localhost
+
+
+=====================================================================
+TROUBLESHOOTING:
+=====================================================================
+
+Error: "docker: command not found"
+→ Docker Desktop is not installed or not running
+→ Install from: https://www.docker.com/products/docker-desktop
+→ Make sure Docker Desktop is running
+
+Error: "port is already allocated"
+→ Something else is using port 80 or 3000
+→ Stop other services or change ports in docker-compose.yml
+
+Error: "Cannot connect to the Docker daemon"
+→ Start Docker Desktop application
+
+Error: "curl: command not found"
+→ Install curl: https://curl.se/windows/
+→ Or use PowerShell: Invoke-WebRequest http://localhost:3000/health
+
+
+=====================================================================
+STILL NOT WORKING?
+=====================================================================
+
+Share this information:
+
+1. Output of: docker compose ps
+2. Output of: docker compose logs backend
+3. Output of: dir data\database.sqlite
+4. Your Windows version
+5. Docker Desktop version
+
+And run the complete rebuild:
+    docker compose down -v
+    docker compose build --no-cache
+    docker compose up -d
+
+
+=====================================================================
+ACCESS AFTER FIX:
+=====================================================================
+
+Frontend:    http://localhost
+Backend API: http://localhost:3000
+
+Username: admin
+Password: admin123
+
+⚠️  Change password after first login!
+
+=====================================================================
