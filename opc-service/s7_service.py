@@ -70,13 +70,24 @@ class S7Tag:
     asset_id: int
     tag_type: str
     tag_name: str
-    tag_address: str  # Format: DB1.DBX0.0, M0.0, I0.0, Q0.0
+    tag_address: str  # Format: DB1.DBX0.0, M0.0, I0.0/E0.0, Q0.0/A0.0 (supports German & English)
     data_type: str
     invert_logic: bool
 
 
 class S7ConnectionManager:
-    """Manages S7 PLC connections and data acquisition"""
+    """Manages S7 PLC connections and data acquisition
+
+    Supports both English/International and German S7 notation:
+    - English: I (Input), Q (Output), M (Memory), DB (Data Block)
+    - German: E (Eingang), A (Ausgang), M (Merker), DB (Datenbaustein)
+
+    Examples:
+    - E453.2 or I453.2 (Input byte 453, bit 2)
+    - A241.1 or Q241.1 (Output byte 241, bit 1)
+    - M10.5 (Memory byte 10, bit 5)
+    - DB1.DBX0.0 (Data Block 1, Byte 0, Bit 0)
+    """
 
     def __init__(self, db_path: str):
         self.db_path = db_path
@@ -308,41 +319,81 @@ class S7ConnectionManager:
     async def read_tag(self, client: snap7.client.Client, tag_address: str, data_type: str):
         """Read a single tag from PLC
 
-        Tag address formats:
+        Tag address formats (English/International):
         - DB tags: DB1.DBX0.0, DB1.DBW2, DB1.DBD4
         - Memory: M0.0, MW2, MD4
         - Inputs: I0.0, IW2, ID4
         - Outputs: Q0.0, QW2, QD4
+
+        Tag address formats (German):
+        - Eingänge (Inputs): E0.0, EW2, ED4
+        - Ausgänge (Outputs): A0.0, AW2, AD4
+        - Merker (Memory): M0.0, MW2, MD4
         """
 
         # Run blocking S7 read in thread pool
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self._read_tag_sync, client, tag_address, data_type)
 
+    def _normalize_tag_address(self, tag_address: str) -> str:
+        """Convert German notation to English notation for consistency
+
+        German -> English:
+        E (Eingang) -> I (Input)
+        A (Ausgang) -> Q (Output)
+        M (Merker) -> M (Memory, same)
+        """
+        tag_upper = tag_address.upper()
+
+        # Convert German to English notation
+        if tag_upper.startswith('E') and not tag_upper.startswith('EB'):
+            # E453.2 -> I453.2, EW10 -> IW10, ED20 -> ID20
+            # But not EB (which is already byte notation)
+            if len(tag_upper) > 1 and tag_upper[1].isdigit():
+                # E123.4 -> I123.4
+                return 'I' + tag_address[1:]
+            elif len(tag_upper) > 1 and tag_upper[1] in ['W', 'D']:
+                # EW10 -> IW10, ED20 -> ID20
+                return 'I' + tag_address[1:]
+
+        elif tag_upper.startswith('A') and not tag_upper.startswith('AB'):
+            # A241.1 -> Q241.1, AW10 -> QW10, AD20 -> QD20
+            if len(tag_upper) > 1 and tag_upper[1].isdigit():
+                # A123.4 -> Q123.4
+                return 'Q' + tag_address[1:]
+            elif len(tag_upper) > 1 and tag_upper[1] in ['W', 'D']:
+                # AW10 -> QW10, AD20 -> QD20
+                return 'Q' + tag_address[1:]
+
+        # Return as-is if no conversion needed
+        return tag_address
+
     def _read_tag_sync(self, client: snap7.client.Client, tag_address: str, data_type: str):
         """Synchronous tag read (called from thread pool)"""
 
-        tag_upper = tag_address.upper()
+        # Normalize German notation to English
+        normalized_tag = self._normalize_tag_address(tag_address)
+        tag_upper = normalized_tag.upper()
 
         # Parse tag address
         if tag_upper.startswith('DB'):
             # Data Block tag: DB1.DBX0.0, DB1.DBW2, DB1.DBD4
-            return self._read_db_tag(client, tag_address)
+            return self._read_db_tag(client, normalized_tag)
 
         elif tag_upper.startswith('M'):
             # Memory tag: M0.0, MW2, MD4
-            return self._read_memory_tag(client, tag_address)
+            return self._read_memory_tag(client, normalized_tag)
 
         elif tag_upper.startswith('I'):
             # Input tag: I0.0, IW2, ID4
-            return self._read_input_tag(client, tag_address)
+            return self._read_input_tag(client, normalized_tag)
 
         elif tag_upper.startswith('Q'):
             # Output tag: Q0.0, QW2, QD4
-            return self._read_output_tag(client, tag_address)
+            return self._read_output_tag(client, normalized_tag)
 
         else:
-            raise ValueError(f"Unsupported tag format: {tag_address}")
+            raise ValueError(f"Unsupported tag format: {tag_address} (normalized: {normalized_tag})")
 
     def _read_db_tag(self, client: snap7.client.Client, tag_address: str) -> any:
         """Read Data Block tag: DB1.DBX0.0, DB1.DBW2, DB1.DBD4"""

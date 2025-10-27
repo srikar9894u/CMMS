@@ -93,9 +93,12 @@ const S7Configuration = () => {
   const tagExamples = {
     'Data Block Bit': 'DB1.DBX0.0 (Data Block 1, Byte 0, Bit 0)',
     'Data Block Word': 'DB1.DBW2 (Data Block 1, Word at byte 2)',
-    'Memory Bit': 'M0.0 (Memory bit 0.0)',
-    'Input Bit': 'I0.0 (Input bit 0.0)',
-    'Output Bit': 'Q0.0 (Output bit 0.0)',
+    'Data Block DWord': 'DB1.DBD4 (Data Block 1, Double Word)',
+    'Memory (Merker)': 'M0.0, MW2, MD4',
+    'Input - English': 'I453.2, IW10, ID20',
+    'Input - German': 'E453.2, EW10, ED20 (Eingang)',
+    'Output - English': 'Q241.1, QW10, QD20',
+    'Output - German': 'A241.1, AW10, AD20 (Ausgang)',
   };
 
   const rackSlotExamples = {
@@ -614,7 +617,7 @@ const S7Configuration = () => {
                     value={tagFormData.tag_address}
                     onChange={(e) => setTagFormData({ ...tagFormData, tag_address: e.target.value })}
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono ${themeColors.colors.input}`}
-                    placeholder="DB1.DBX0.0"
+                    placeholder="E453.2 or I453.2 or DB1.DBX0.0"
                     required
                   />
                 </div>
