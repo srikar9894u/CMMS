@@ -112,27 +112,19 @@ const S7Configuration = () => {
 
   const fetchConnections = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get<S7Connection[]>(
-        `${import.meta.env.VITE_API_URL}/api/s7/connections`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await axios.get<S7Connection[]>('/api/s7/connections');
       setConnections(response.data);
-      setLoading(false);
     } catch (err: any) {
       console.error('Error fetching S7 connections:', err);
       setError('Failed to load S7 connections');
+    } finally {
       setLoading(false);
     }
   };
 
   const fetchAssets = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get<Asset[]>(
-        `${import.meta.env.VITE_API_URL}/api/assets`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await axios.get<Asset[]>('/api/assets');
       setAllAssets(response.data);
     } catch (err: any) {
       console.error('Error fetching assets:', err);
@@ -141,11 +133,7 @@ const S7Configuration = () => {
 
   const fetchTags = async (connectionId: number) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get<S7Tag[]>(
-        `${import.meta.env.VITE_API_URL}/api/s7/connections/${connectionId}/tags`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await axios.get<S7Tag[]>(`/api/s7/connections/${connectionId}/tags`);
       setTags(response.data);
     } catch (err: any) {
       console.error('Error fetching tags:', err);
@@ -159,27 +147,17 @@ const S7Configuration = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('token');
       if (selectedConnection) {
-        // Update existing connection
-        await axios.put(
-          `${import.meta.env.VITE_API_URL}/api/s7/connections/${selectedConnection.id}`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.put(`/api/s7/connections/${selectedConnection.id}`, formData);
         setSuccess('S7 connection updated successfully');
       } else {
-        // Create new connection
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/s7/connections`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.post('/api/s7/connections', formData);
         setSuccess('S7 connection created successfully');
       }
       fetchConnections();
       resetForm();
       setIsModalOpen(false);
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       console.error('Error saving S7 connection:', err);
       setError(err.response?.data?.error || 'Failed to save S7 connection');
@@ -194,19 +172,14 @@ const S7Configuration = () => {
     if (!selectedConnection) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/s7/tags`,
-        {
-          ...tagFormData,
-          s7_connection_id: selectedConnection.id,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post('/api/s7/tags', {
+        ...tagFormData,
+        s7_connection_id: selectedConnection.id,
+      });
       setSuccess('Tag created successfully');
       fetchTags(selectedConnection.id);
       resetTagForm();
-      setIsTagModalOpen(false);
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       console.error('Error creating tag:', err);
       setError(err.response?.data?.error || 'Failed to create tag');
@@ -217,13 +190,10 @@ const S7Configuration = () => {
     if (!window.confirm('Are you sure you want to delete this S7 connection?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/s7/connections/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.delete(`/api/s7/connections/${id}`);
       setSuccess('S7 connection deleted successfully');
       fetchConnections();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       console.error('Error deleting connection:', err);
       setError('Failed to delete connection');
@@ -234,15 +204,12 @@ const S7Configuration = () => {
     if (!window.confirm('Are you sure you want to delete this tag?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/s7/tags/${tagId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.delete(`/api/s7/tags/${tagId}`);
       setSuccess('Tag deleted successfully');
       if (selectedConnection) {
         fetchTags(selectedConnection.id);
       }
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       console.error('Error deleting tag:', err);
       setError('Failed to delete tag');
@@ -321,16 +288,15 @@ const S7Configuration = () => {
   }
 
   return (
-    <div className="p-6" style={{ backgroundColor: themeColors.background, color: themeColors.text }}>
+    <div className={`p-6 ${themeColors.colors.background}`}>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">S7 PLC Configuration</h1>
+        <h1 className={`text-3xl font-bold ${themeColors.colors.textPrimary}`}>S7 PLC Configuration</h1>
         <button
           onClick={() => {
             resetForm();
             setIsModalOpen(true);
           }}
-          className="px-4 py-2 rounded-lg font-medium transition-colors"
-          style={{ backgroundColor: themeColors.primary, color: 'white' }}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${themeColors.colors.primary} text-white ${themeColors.colors.primaryHover}`}
         >
           + Add S7 Connection
         </button>
@@ -348,20 +314,20 @@ const S7Configuration = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ backgroundColor: themeColors.cardBg }}>
-        <table className="min-w-full divide-y" style={{ borderColor: themeColors.border }}>
-          <thead style={{ backgroundColor: themeColors.tableHeader }}>
+      <div className={`${themeColors.colors.card} rounded-lg shadow-lg overflow-hidden`}>
+        <table className={`min-w-full divide-y ${themeColors.colors.cardBorder}`}>
+          <thead className={`${themeColors.colors.secondary}`}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">PLC Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">IP Address</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rack/Slot</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Assets</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>Name</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>PLC Type</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>IP Address</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>Rack/Slot</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>Status</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>Assets</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeColors.colors.textSecondary}`}>Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y" style={{ borderColor: themeColors.border }}>
+          <tbody className={`divide-y ${themeColors.colors.cardBorder}`}>
             {connections.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
@@ -370,11 +336,11 @@ const S7Configuration = () => {
               </tr>
             ) : (
               connections.map((connection) => (
-                <tr key={connection.id} className="hover:bg-gray-50" style={{ backgroundColor: themeColors.cardBg }}>
-                  <td className="px-6 py-4 whitespace-nowrap font-medium">{connection.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{connection.plc_type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap font-mono">{connection.ip_address}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={connection.id} className={themeColors.colors.cardHover}>
+                  <td className={`px-6 py-4 whitespace-nowrap font-medium ${themeColors.colors.textPrimary}`}>{connection.name}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeColors.colors.textSecondary}`}>{connection.plc_type}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap font-mono ${themeColors.colors.textSecondary}`}>{connection.ip_address}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeColors.colors.textSecondary}`}>
                     Rack {connection.rack}, Slot {connection.slot}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -388,7 +354,7 @@ const S7Configuration = () => {
                       {connection.enabled ? 'Enabled' : 'Disabled'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{connection.connected_assets || 0}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeColors.colors.textSecondary}`}>{connection.connected_assets || 0}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => openTagModal(connection)}
@@ -427,25 +393,23 @@ const S7Configuration = () => {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Connection Name *</label>
+            <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Connection Name *</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-              style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
               placeholder="e.g., S7-416 Production PLC"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">PLC Type *</label>
+            <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>PLC Type *</label>
             <select
               value={formData.plc_type}
               onChange={(e) => handlePlcTypeChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-              style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
               required
             >
               {plcTypes.map((type) => (
@@ -457,13 +421,12 @@ const S7Configuration = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">IP Address *</label>
+            <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>IP Address *</label>
             <input
               type="text"
               value={formData.ip_address}
               onChange={(e) => setFormData({ ...formData, ip_address: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono"
-              style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono ${themeColors.colors.input}`}
               placeholder="192.168.10.10"
               required
             />
@@ -471,26 +434,24 @@ const S7Configuration = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Rack *</label>
+              <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Rack *</label>
               <input
                 type="number"
                 value={formData.rack}
                 onChange={(e) => setFormData({ ...formData, rack: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                 min="0"
                 max="7"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Slot *</label>
+              <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Slot *</label>
               <input
                 type="number"
                 value={formData.slot}
                 onChange={(e) => setFormData({ ...formData, slot: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                 min="0"
                 max="31"
                 required
@@ -500,25 +461,23 @@ const S7Configuration = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Polling Interval (ms)</label>
+              <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Polling Interval (ms)</label>
               <input
                 type="number"
                 value={formData.polling_interval}
                 onChange={(e) => setFormData({ ...formData, polling_interval: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                 min="1000"
                 step="1000"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Connection Timeout (ms)</label>
+              <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Connection Timeout (ms)</label>
               <input
                 type="number"
                 value={formData.connection_timeout}
                 onChange={(e) => setFormData({ ...formData, connection_timeout: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                 min="1000"
                 step="1000"
               />
@@ -533,25 +492,24 @@ const S7Configuration = () => {
                 onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
                 className="rounded"
               />
-              <span className="text-sm font-medium">Enable this connection</span>
+              <span className={`text-sm font-medium ${themeColors.colors.textSecondary}`}>Enable this connection</span>
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Notes</label>
+            <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Notes</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-              style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
               rows={3}
               placeholder="Optional notes about this PLC"
             />
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-            <p className="font-medium text-blue-900 mb-1">Typical Rack/Slot Values:</p>
-            <ul className="text-blue-800 space-y-1">
+          <div className={`${themeColors.colors.infoLight} rounded-lg p-3 text-sm`}>
+            <p className={`font-medium mb-1 ${themeColors.colors.infoText}`}>Typical Rack/Slot Values:</p>
+            <ul className={`${themeColors.colors.infoText} space-y-1`}>
               <li>• S7-300: Rack 0, Slot 2</li>
               <li>• S7-400: Rack 0, Slot 3</li>
               <li>• S7-1200/1500: Rack 0, Slot 1</li>
@@ -565,15 +523,13 @@ const S7Configuration = () => {
                 setIsModalOpen(false);
                 resetForm();
               }}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-              style={{ borderColor: themeColors.border }}
+              className={`px-4 py-2 border rounded-lg ${themeColors.colors.border} ${themeColors.colors.secondaryHover}`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg font-medium"
-              style={{ backgroundColor: themeColors.primary, color: 'white' }}
+              className={`px-4 py-2 rounded-lg font-medium ${themeColors.colors.primary} text-white ${themeColors.colors.primaryHover}`}
             >
               {selectedConnection ? 'Update Connection' : 'Create Connection'}
             </button>
@@ -590,21 +546,19 @@ const S7Configuration = () => {
           resetTagForm();
         }}
         title={`Tag Mappings - ${selectedConnection?.name}`}
-        size="large"
       >
-        <div className="space-y-6">
+        <div className="space-y-6 max-h-96 overflow-y-auto">
           {/* Add Tag Form */}
-          <div className="border-b pb-4" style={{ borderColor: themeColors.border }}>
-            <h3 className="text-lg font-semibold mb-3">Add New Tag</h3>
+          <div className={`border-b pb-4 ${themeColors.colors.cardBorder}`}>
+            <h3 className={`text-lg font-semibold mb-3 ${themeColors.colors.textPrimary}`}>Add New Tag</h3>
             <form onSubmit={handleTagSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Asset *</label>
+                  <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Asset *</label>
                   <select
                     value={tagFormData.asset_id}
                     onChange={(e) => setTagFormData({ ...tagFormData, asset_id: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                    style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                     required
                   >
                     <option value="">Select Asset</option>
@@ -616,12 +570,11 @@ const S7Configuration = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tag Type *</label>
+                  <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Tag Type *</label>
                   <select
                     value={tagFormData.tag_type}
                     onChange={(e) => setTagFormData({ ...tagFormData, tag_type: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                    style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                     required
                   >
                     {tagTypes.map((type) => (
@@ -635,19 +588,18 @@ const S7Configuration = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tag Name *</label>
+                  <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>Tag Name *</label>
                   <input
                     type="text"
                     value={tagFormData.tag_name}
                     onChange={(e) => setTagFormData({ ...tagFormData, tag_name: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                    style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.colors.input}`}
                     placeholder="Motor_1_Running"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${themeColors.colors.textSecondary}`}>
                     Tag Address *{' '}
                     <button
                       type="button"
@@ -661,8 +613,7 @@ const S7Configuration = () => {
                     type="text"
                     value={tagFormData.tag_address}
                     onChange={(e) => setTagFormData({ ...tagFormData, tag_address: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono"
-                    style={{ borderColor: themeColors.border, backgroundColor: themeColors.inputBg }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono ${themeColors.colors.input}`}
                     placeholder="DB1.DBX0.0"
                     required
                   />
@@ -688,15 +639,14 @@ const S7Configuration = () => {
                     onChange={(e) => setTagFormData({ ...tagFormData, invert_logic: e.target.checked })}
                     className="rounded"
                   />
-                  <span className="text-sm">Invert Logic (0=ON, 1=OFF)</span>
+                  <span className={`text-sm ${themeColors.colors.textSecondary}`}>Invert Logic (0=ON, 1=OFF)</span>
                 </label>
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg font-medium"
-                  style={{ backgroundColor: themeColors.primary, color: 'white' }}
+                  className={`px-4 py-2 rounded-lg font-medium ${themeColors.colors.primary} text-white ${themeColors.colors.primaryHover}`}
                 >
                   Add Tag
                 </button>
@@ -706,7 +656,7 @@ const S7Configuration = () => {
 
           {/* Existing Tags List */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">Configured Tags</h3>
+            <h3 className={`text-lg font-semibold mb-3 ${themeColors.colors.textPrimary}`}>Configured Tags</h3>
             {tags.length === 0 ? (
               <p className="text-gray-500 text-center py-4">No tags configured yet</p>
             ) : (
@@ -714,12 +664,11 @@ const S7Configuration = () => {
                 {tags.map((tag) => (
                   <div
                     key={tag.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                    style={{ borderColor: themeColors.border, backgroundColor: themeColors.cardBg }}
+                    className={`flex items-center justify-between p-3 border rounded-lg ${themeColors.colors.cardBorder} ${themeColors.colors.card}`}
                   >
                     <div className="flex-1">
-                      <div className="font-medium">{tag.asset_name}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className={`font-medium ${themeColors.colors.textPrimary}`}>{tag.asset_name}</div>
+                      <div className={`text-sm ${themeColors.colors.textSecondary}`}>
                         {tag.tag_type} • <code className="bg-gray-100 px-2 py-1 rounded">{tag.tag_address}</code>
                         {tag.invert_logic && <span className="ml-2 text-xs">(inverted)</span>}
                       </div>
