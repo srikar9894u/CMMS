@@ -1,0 +1,175 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                   ISSUE: OLD FRONTEND SHOWING                         ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PROBLEM:
+════════
+  - http://localhost shows old interface
+  - New "S7 PLC Configuration" page not appearing
+  - Docker needs to rebuild with latest frontend code
+
+
+QUICK FIX - RUN THIS:
+══════════════════════════════════════════════════════════════════════
+
+  cd C:\Users\Srikar.Tanukula\CMMS
+  rebuild-docker.bat
+
+
+WHAT THIS DOES:
+══════════════════════════════════════════════════════════════════════
+
+  1. Stops all containers
+  2. Rebuilds with --no-cache (forces fresh build)
+  3. Starts all services
+  4. Includes new S7 Configuration page
+  5. Tests everything
+
+
+AFTER REBUILD - VERIFY:
+══════════════════════════════════════════════════════════════════════
+
+  1. Open: http://localhost
+  2. Login: admin / admin123
+  3. Look for "S7 PLC Configuration" in sidebar menu
+     (Should appear under Settings section)
+
+
+EXPLANATION:
+══════════════════════════════════════════════════════════════════════
+
+Why old frontend?
+  - Docker cached old build
+  - New frontend files not included in image
+  - Need fresh build to pick up changes
+
+What changed?
+  - Added S7Configuration.tsx page
+  - Added S7 routes to App.tsx
+  - Added menu item to Layout.tsx
+  - Added backend S7 API routes
+
+Why rebuild needed?
+  - Frontend is built into Docker image
+  - Docker caches layers for speed
+  - --no-cache forces fresh build
+  - Picks up all new files
+
+
+MANUAL STEPS (if script doesn't work):
+══════════════════════════════════════════════════════════════════════
+
+  cd C:\Users\Srikar.Tanukula\CMMS
+
+  docker compose down
+
+  docker compose build --no-cache frontend
+  docker compose build --no-cache backend
+
+  docker compose up -d
+
+  timeout /t 10
+
+  docker compose ps
+
+
+VERIFY FRONTEND WAS REBUILT:
+══════════════════════════════════════════════════════════════════════
+
+Check build logs:
+
+  docker compose logs frontend | findstr "S7Configuration"
+
+Should see the file being copied during build
+
+
+CHECK WHAT'S RUNNING:
+══════════════════════════════════════════════════════════════════════
+
+  docker compose ps
+
+Should show:
+  cmms-backend     Running   0.0.0.0:3000->3000/tcp
+  cmms-frontend    Running   0.0.0.0:80->80/tcp
+  cmms-opc         Running
+
+
+BACKEND CHECK (should work):
+══════════════════════════════════════════════════════════════════════
+
+  http://localhost:3000/health
+  Response: {"status":"ok","timestamp":"..."}
+
+  http://localhost:3000/api/s7/connections
+  Response: [] (empty array, no connections yet)
+
+
+FRONTEND CHECK (should show new UI):
+══════════════════════════════════════════════════════════════════════
+
+  http://localhost/
+  Should show: Login page
+
+  After login, sidebar menu should have:
+    📊 Dashboard
+    🏗️ Assets
+    🔧 Work Orders
+    ...
+    🔌 OPC Configuration
+    🤖 S7 PLC Configuration    ← NEW!
+    👥 Users
+
+
+IF STILL NOT SHOWING:
+══════════════════════════════════════════════════════════════════════
+
+Clear browser cache:
+  Ctrl + Shift + Delete (Chrome/Edge)
+  Clear cached images and files
+  Close and reopen browser
+
+
+Force refresh:
+  Ctrl + F5 (Windows)
+  Cmd + Shift + R (Mac)
+
+
+Check Docker logs:
+  docker compose logs frontend
+  Look for build errors
+
+
+Verify files exist locally:
+  dir frontend\src\pages\S7Configuration.tsx
+
+  Should exist: Yes
+
+  If not, run:
+    git pull origin claude/build-cmms-webapp-011CUMdU5DjLj8D3AJLooDTr
+
+
+STILL HAVING ISSUES?
+══════════════════════════════════════════════════════════════════════
+
+Complete reset:
+
+  docker compose down -v
+  docker system prune -a -f
+  git pull origin claude/build-cmms-webapp-011CUMdU5DjLj8D3AJLooDTr
+  update-docker.bat
+
+
+This removes everything and rebuilds from scratch.
+
+
+SUMMARY:
+══════════════════════════════════════════════════════════════════════
+
+The new code is in your repository, but Docker has cached the old
+frontend build. Running rebuild-docker.bat will fix this by forcing
+a fresh build that includes the new S7 Configuration page.
+
+Run: rebuild-docker.bat
+
+Then check: http://localhost for new "S7 PLC Configuration" menu item
+
