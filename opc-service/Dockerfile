@@ -15,12 +15,13 @@ RUN apt-get update && apt-get install -y \
 # Repository: https://github.com/davenardella/snap7
 RUN curl -L -o snap7.tar.gz https://github.com/davenardella/snap7/archive/refs/heads/main.tar.gz \
     && tar -xzf snap7.tar.gz \
-    && cd snap7-main/build/unix \
+    && SNAP7_DIR=$(find . -maxdepth 1 -name "snap7-*" -type d | head -n 1) \
+    && cd $SNAP7_DIR/build/unix \
     && make -f x86_64_linux.mk all \
     && cp ../bin/x86_64-linux/libsnap7.so /usr/lib/ \
     && ldconfig \
     && cd /app \
-    && rm -rf snap7-main snap7.tar.gz
+    && rm -rf snap7-* snap7.tar.gz
 
 # Copy requirements files
 COPY requirements.txt .
