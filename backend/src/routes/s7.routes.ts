@@ -247,8 +247,24 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
       description
     } = req.body;
 
+    // Log incoming request for debugging
+    console.log('Creating S7 tag with data:', {
+      s7_connection_id,
+      asset_id,
+      tag_type,
+      tag_name,
+      tag_address,
+      data_type,
+      invert_logic
+    });
+
     if (!s7_connection_id || !asset_id || !tag_type || !tag_name || !tag_address) {
       return res.status(400).json({ error: 'Connection, asset, tag type, name, and address are required' });
+    }
+
+    // Validate tag_address is not just whitespace
+    if (typeof tag_address === 'string' && tag_address.trim() === '') {
+      return res.status(400).json({ error: 'Tag address cannot be empty' });
     }
 
     // Verify connection exists
@@ -293,8 +309,23 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
     if (error.message.includes('UNIQUE constraint failed')) {
       return res.status(400).json({ error: 'This tag type already exists for this asset on this PLC' });
     }
+    if (error.message.includes('CHECK constraint failed')) {
+      return res.status(400).json({ error: 'Invalid tag type. Must be: running, trip, off, or custom' });
+    }
+    if (error.message.includes('FOREIGN KEY constraint failed')) {
+      return res.status(400).json({ error: 'Invalid connection or asset ID' });
+    }
     console.error('Error creating S7 tag:', error);
-    res.status(500).json({ error: 'Failed to create S7 tag' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      errno: error.errno,
+      stack: error.stack
+    });
+    res.status(500).json({
+      error: 'Failed to create S7 tag',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
