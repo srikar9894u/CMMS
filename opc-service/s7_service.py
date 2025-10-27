@@ -23,7 +23,7 @@ except ImportError:
     print("ERROR: snap7 library not installed!")
     print("Install with: pip install python-snap7")
     print("\nAlso install snap7 library:")
-    print("  Windows: Download from https://github.com/Davinci/snap7/releases")
+    print("  Windows: Download from https://github.com/davenardella/snap7/releases")
     print("  Linux:   sudo apt-get install libsnap7-1 libsnap7-dev")
     print("  Mac:     brew install snap7")
     sys.exit(1)

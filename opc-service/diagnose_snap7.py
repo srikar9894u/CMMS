@@ -146,7 +146,7 @@ if not dll_found:
     print()
     print("Or manual installation:")
     print("  1. Download snap7 from:")
-    print("     https://github.com/SCADACS/snap7/releases")
+    print("     https://github.com/davenardella/snap7/releases")
     print("  2. Get snap7-full-1.4.2.7z (or latest version)")
     print("  3. Extract the archive")
     if is_64bit:

@@ -11,15 +11,16 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install snap7 library
-RUN curl -L -o snap7.tar.gz https://github.com/SCADACS/snap7/archive/refs/tags/v1.4.2.tar.gz \
+# Download and install snap7 library from official repository
+# Repository: https://github.com/davenardella/snap7
+RUN curl -L -o snap7.tar.gz https://github.com/davenardella/snap7/archive/refs/heads/main.tar.gz \
     && tar -xzf snap7.tar.gz \
-    && cd snap7-1.4.2/build/unix \
+    && cd snap7-main/build/unix \
     && make -f x86_64_linux.mk all \
     && cp ../bin/x86_64-linux/libsnap7.so /usr/lib/ \
     && ldconfig \
     && cd /app \
-    && rm -rf snap7-1.4.2 snap7.tar.gz
+    && rm -rf snap7-main snap7.tar.gz
 
 # Copy requirements files
 COPY requirements.txt .

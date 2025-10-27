@@ -73,7 +73,7 @@ echo.
 echo Steps:
 echo ---------------------------------------------------------------
 echo 1. Download snap7 from:
-echo    https://github.com/SCADACS/snap7/releases
+echo    https://github.com/davenardella/snap7/releases
 echo.
 echo 2. Look for: snap7-full-1.4.2.7z (or latest version)
 echo    Click to download the file
@@ -93,7 +93,7 @@ echo.
 echo ===============================================================
 echo.
 echo Opening download page in browser...
-start https://github.com/SCADACS/snap7/releases
+start https://github.com/davenardella/snap7/releases
 echo.
 echo After completing steps above, press any key to test...
 pause >nul
