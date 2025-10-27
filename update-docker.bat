@@ -27,29 +27,46 @@ if errorlevel 1 (
 )
 
 echo.
-echo Step 2: Stopping all containers...
+echo Step 2: Initializing data directory...
+echo ---------------------------------------------------------------
+if not exist "data" (
+    mkdir data
+    echo Created data directory
+) else (
+    echo Data directory already exists
+)
+
+if exist "backend\database.sqlite" (
+    if not exist "data\database.sqlite" (
+        echo Copying database to data folder...
+        copy "backend\database.sqlite" "data\database.sqlite"
+    )
+)
+
+echo.
+echo Step 3: Stopping all containers...
 echo ---------------------------------------------------------------
 docker compose down
 
 echo.
-echo Step 3: Pulling latest base images...
+echo Step 4: Pulling latest base images...
 echo ---------------------------------------------------------------
 docker compose pull
 
 echo.
-echo Step 4: Rebuilding containers (no cache)...
+echo Step 5: Rebuilding containers (no cache)...
 echo ---------------------------------------------------------------
 docker compose build --no-cache
 
 echo.
-echo Step 5: Starting all services...
+echo Step 6: Starting all services...
 echo ---------------------------------------------------------------
 docker compose up -d
 
 echo.
-echo Step 6: Checking service status...
+echo Step 7: Waiting for backend to initialize...
 echo ---------------------------------------------------------------
-timeout /t 5 /nobreak >nul
+timeout /t 8 /nobreak >nul
 docker compose ps
 
 echo.

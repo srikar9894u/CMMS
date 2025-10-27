@@ -1,0 +1,92 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 QUICK FIX - DOCKER DATABASE ISSUE                     ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+ISSUE YOU'RE SEEING:
+══════════════════════════════════════════════════════════════════════
+
+  ❌ curl: Failed to connect to localhost port 3000
+  ❌ Database not found at ../backend/database.sqlite
+
+
+QUICK FIX - RUN THIS ONE COMMAND:
+══════════════════════════════════════════════════════════════════════
+
+  cd C:\Users\Srikar.Tanukula\CMMS
+  init-data-docker.bat
+
+That's it! This fixes everything.
+
+
+WHAT IT DOES:
+══════════════════════════════════════════════════════════════════════
+
+  ✅ Creates data directory
+  ✅ Copies database to correct location
+  ✅ Restarts Docker with port 3000 exposed
+  ✅ Waits for backend to start
+  ✅ Tests backend health
+
+
+AFTER THE FIX - SETUP S7-416 PLC:
+══════════════════════════════════════════════════════════════════════
+
+  cd opc-service
+  python setup_s7_connection.py
+  python setup_s7_tags.py
+  python s7_service.py
+
+
+VERIFY IT WORKED:
+══════════════════════════════════════════════════════════════════════
+
+  Test backend:
+    curl http://localhost:3000/health
+
+  Expected: {"status":"ok","database":"connected"}
+
+  Test frontend:
+    Open browser: http://localhost
+    Login: admin / admin123
+
+
+WHAT WAS FIXED:
+══════════════════════════════════════════════════════════════════════
+
+  1. docker-compose.yml now exposes backend port 3000
+  2. Database path changed to ./data/database.sqlite for Docker
+  3. All S7 scripts updated to use new database path
+  4. Data directory auto-created
+
+
+IF STILL NOT WORKING:
+══════════════════════════════════════════════════════════════════════
+
+  Check backend logs:
+    docker compose logs backend
+
+  Restart just backend:
+    docker compose restart backend
+    timeout /t 5
+    curl http://localhost:3000/health
+
+  Complete reset (deletes database!):
+    docker compose down -v
+    rmdir /s data
+    update-docker.bat
+
+
+NEED DETAILED HELP:
+══════════════════════════════════════════════════════════════════════
+
+  Read: FIX_DOCKER_DATABASE.md
+
+
+SUMMARY:
+══════════════════════════════════════════════════════════════════════
+
+  Old: Backend port not exposed, database in wrong location
+  New: Port 3000 exposed, database in ./data/ folder
+
+  Just run: init-data-docker.bat
+

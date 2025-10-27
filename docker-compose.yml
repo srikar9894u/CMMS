@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: cmms-backend
+    ports:
+      - "3000:3000"
     environment:
       - PORT=3000
       - NODE_ENV=production

@@ -8,7 +8,9 @@ import sqlite3
 import os
 
 # Database path
-DB_PATH = os.getenv('DB_PATH', '../backend/database.sqlite')
+# For Docker: ../data/database.sqlite
+# For local npm: ../backend/database.sqlite
+DB_PATH = os.getenv('DB_PATH', '../data/database.sqlite')
 
 print("═" * 70)
 print("  S7 Tag Mapping Setup")

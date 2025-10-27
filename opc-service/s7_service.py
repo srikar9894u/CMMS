@@ -36,7 +36,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Database path
-DB_PATH = os.getenv('DB_PATH', '../backend/database.sqlite')
+# For Docker: ../data/database.sqlite
+# For local npm: ../backend/database.sqlite
+DB_PATH = os.getenv('DB_PATH', '../data/database.sqlite')
 
 
 class PLCType(Enum):
