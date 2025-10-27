@@ -24,6 +24,7 @@ const Layout = () => {
 
   if (user?.role === 'admin' || user?.role === 'manager') {
     navigation.push({ name: 'OPC Configuration', path: '/opc-config', icon: '🔌' });
+    navigation.push({ name: 'S7 PLC Configuration', path: '/s7-config', icon: '🤖' });
     navigation.push({ name: 'Users', path: '/users', icon: '👥' });
   }
 

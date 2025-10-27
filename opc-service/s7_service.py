@@ -36,8 +36,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Database path
-# For Docker: ../data/database.sqlite
-# For local npm: ../backend/database.sqlite
+# For Docker: /data/database.sqlite (set via environment variable)
+# For local: ../data/database.sqlite or ../backend/database.sqlite
 DB_PATH = os.getenv('DB_PATH', '../data/database.sqlite')
 
 

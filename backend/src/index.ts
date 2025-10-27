@@ -15,6 +15,7 @@ import inventoryRoutes from './routes/inventory.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import leaveRoutes from './routes/leave.routes';
 import opcRoutes from './routes/opc.routes';
+import s7Routes from './routes/s7.routes';
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/opc', opcRoutes);
+app.use('/api/s7', s7Routes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
