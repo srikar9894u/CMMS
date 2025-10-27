@@ -2,23 +2,24 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies including snap7
+# Install system dependencies including snap7 build tools
 RUN apt-get update && apt-get install -y \
     gcc \
-    wget \
-    unzip \
-    p7zip-full \
+    g++ \
+    make \
+    curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install snap7 library
-RUN wget https://github.com/SCADACS/snap7/archive/refs/tags/v1.4.2.tar.gz \
-    && tar -xzf v1.4.2.tar.gz \
+RUN curl -L -o snap7.tar.gz https://github.com/SCADACS/snap7/archive/refs/tags/v1.4.2.tar.gz \
+    && tar -xzf snap7.tar.gz \
     && cd snap7-1.4.2/build/unix \
-    && make -f x86_64_linux.mk \
+    && make -f x86_64_linux.mk all \
     && cp ../bin/x86_64-linux/libsnap7.so /usr/lib/ \
     && ldconfig \
     && cd /app \
-    && rm -rf snap7-1.4.2 v1.4.2.tar.gz
+    && rm -rf snap7-1.4.2 snap7.tar.gz
 
 # Copy requirements files
 COPY requirements.txt .
