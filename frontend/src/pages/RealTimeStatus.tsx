@@ -49,8 +49,23 @@ const RealTimeStatus = () => {
 
   const fetchStatuses = async () => {
     try {
-      const response = await axios.get('/api/opc/status/current');
-      setStatuses(response.data);
+      // Fetch both OPC and S7 statuses
+      const [opcResponse, s7Response] = await Promise.all([
+        axios.get('/api/opc/status/current').catch(() => ({ data: [] })),
+        axios.get('/api/s7/status/current').catch(() => ({ data: [] }))
+      ]);
+
+      // Combine both arrays, removing duplicates by asset ID
+      const combined = [...opcResponse.data, ...s7Response.data];
+      const uniqueStatuses = combined.reduce((acc, current) => {
+        const existing = acc.find((item: AssetStatus) => item.id === current.id);
+        if (!existing) {
+          acc.push(current);
+        }
+        return acc;
+      }, [] as AssetStatus[]);
+
+      setStatuses(uniqueStatuses);
     } catch (error) {
       console.error('Failed to fetch statuses:', error);
     } finally {
@@ -60,12 +75,21 @@ const RealTimeStatus = () => {
 
   const fetchHistory = async (assetId: number) => {
     try {
-      const response = await axios.get(`/api/opc/assets/${assetId}/status-history`, {
-        params: { limit: 50, hours: 24 }
-      });
+      // Try S7 endpoint first, then OPC endpoint
+      let response;
+      try {
+        response = await axios.get(`/api/s7/assets/${assetId}/status-history`, {
+          params: { limit: 50, hours: 24 }
+        });
+      } catch {
+        response = await axios.get(`/api/opc/assets/${assetId}/status-history`, {
+          params: { limit: 50, hours: 24 }
+        });
+      }
       setHistory(response.data);
     } catch (error) {
       console.error('Failed to fetch history:', error);
+      setHistory([]);
     }
   };
 

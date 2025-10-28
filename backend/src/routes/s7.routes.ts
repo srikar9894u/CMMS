@@ -408,4 +408,54 @@ router.delete('/tags/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest
   }
 });
 
+// Get asset status history
+router.get('/assets/:id/status-history', (req: AuthRequest, res: Response) => {
+  try {
+    const { limit = 100, hours = 24 } = req.query;
+
+    const history = db.prepare(`
+      SELECT *
+      FROM asset_status_log
+      WHERE asset_id = ?
+        AND timestamp >= datetime('now', '-' || ? || ' hours')
+      ORDER BY timestamp DESC
+      LIMIT ?
+    `).all(req.params.id, hours, limit);
+
+    res.json(history);
+  } catch (error: any) {
+    console.error('Error fetching status history:', error);
+    res.status(500).json({ error: 'Failed to fetch status history' });
+  }
+});
+
+// Get current status for all S7-enabled assets
+router.get('/status/current', (req: AuthRequest, res: Response) => {
+  try {
+    const statuses = db.prepare(`
+      SELECT DISTINCT
+        a.id,
+        a.name,
+        a.asset_tag,
+        a.category,
+        a.real_time_status,
+        a.last_opc_update,
+        sc.name as connection_name,
+        sc.connection_status,
+        sc.plc_type
+      FROM assets a
+      JOIN s7_tags st ON a.id = st.asset_id
+      JOIN s7_connections sc ON st.s7_connection_id = sc.id
+      WHERE sc.enabled = 1
+      GROUP BY a.id
+      ORDER BY a.name
+    `).all();
+
+    res.json(statuses);
+  } catch (error: any) {
+    console.error('Error fetching current S7 statuses:', error);
+    res.status(500).json({ error: 'Failed to fetch current S7 statuses' });
+  }
+});
+
 export default router;
