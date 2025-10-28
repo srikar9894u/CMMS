@@ -115,7 +115,11 @@ class S7ConnectionManager:
         logger.info("S7 Connection Manager initialized")
 
     async def create_tables(self, db):
-        """Create S7-specific tables if they don't exist"""
+        """Create S7-specific tables if they don't exist
+
+        Note: Tables are primarily created by the backend database.ts,
+        but this ensures they exist for standalone S7 service operation.
+        """
 
         # S7 Connections table
         await db.execute("""
@@ -137,7 +141,7 @@ class S7ConnectionManager:
             )
         """)
 
-        # S7 Tags table (similar to OPC tags)
+        # S7 Tags table (compatible with backend schema)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS s7_tags (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -150,13 +154,14 @@ class S7ConnectionManager:
                 invert_logic BOOLEAN DEFAULT 0,
                 description TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (s7_connection_id) REFERENCES s7_connections(id) ON DELETE CASCADE,
                 FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
                 UNIQUE(s7_connection_id, asset_id, tag_type)
             )
         """)
 
-        logger.info("S7 tables created")
+        logger.info("S7 tables created or verified")
 
     async def start_monitoring(self):
         """Start monitoring all enabled S7 connections"""

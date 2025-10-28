@@ -199,10 +199,53 @@ export const initDatabase = () => {
     )
   `);
 
+  // S7 Connections table - stores S7 PLC connection configuration
+  // Supports direct S7 protocol communication (S7-300, S7-400, S7-1200, S7-1500)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS s7_connections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      plc_type TEXT NOT NULL,
+      ip_address TEXT NOT NULL,
+      rack INTEGER DEFAULT 0,
+      slot INTEGER DEFAULT 2,
+      enabled BOOLEAN DEFAULT 1,
+      polling_interval INTEGER DEFAULT 5000,
+      connection_timeout INTEGER DEFAULT 10000,
+      connection_status TEXT DEFAULT 'disconnected',
+      last_connected DATETIME,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // S7 Tags table - stores tag mappings for S7 PLCs
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS s7_tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      s7_connection_id INTEGER NOT NULL,
+      asset_id INTEGER NOT NULL,
+      tag_type TEXT NOT NULL CHECK(tag_type IN ('running', 'trip', 'off', 'custom')),
+      tag_name TEXT NOT NULL,
+      tag_address TEXT NOT NULL,
+      data_type TEXT DEFAULT 'boolean',
+      invert_logic BOOLEAN DEFAULT 0,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (s7_connection_id) REFERENCES s7_connections(id) ON DELETE CASCADE,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+      UNIQUE(s7_connection_id, asset_id, tag_type)
+    )
+  `);
+
   // Create indexes for faster queries
   db.exec(`CREATE INDEX IF NOT EXISTS idx_asset_status_log_asset_time ON asset_status_log(asset_id, timestamp DESC)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_asset ON opc_tags(asset_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_connection ON opc_tags(opc_connection_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_s7_tags_asset ON s7_tags(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_s7_tags_connection ON s7_tags(s7_connection_id)`);
 
   // Migration: Add name column to opc_connections if it doesn't exist (for migration from old schema)
   const opcConnColumns = db.prepare("PRAGMA table_info(opc_connections)").all() as any[];
