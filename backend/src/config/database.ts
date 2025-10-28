@@ -341,6 +341,31 @@ export const initDatabase = () => {
     console.log('Added last_opc_update column to assets table');
   }
 
+  // Migration: Add updated_at column to s7_connections and s7_tags if they don't exist
+  // Check if s7_connections table exists first
+  const s7ConnTableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='s7_connections'").get();
+  if (s7ConnTableExists) {
+    const s7ConnColumns = db.prepare("PRAGMA table_info(s7_connections)").all() as any[];
+    const hasS7ConnUpdatedAt = s7ConnColumns.some((col: any) => col.name === 'updated_at');
+
+    if (!hasS7ConnUpdatedAt) {
+      db.exec(`ALTER TABLE s7_connections ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
+      console.log('Added updated_at column to s7_connections table');
+    }
+  }
+
+  // Check if s7_tags table exists first
+  const s7TagsTableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='s7_tags'").get();
+  if (s7TagsTableExists) {
+    const s7TagsColumns = db.prepare("PRAGMA table_info(s7_tags)").all() as any[];
+    const hasS7TagsUpdatedAt = s7TagsColumns.some((col: any) => col.name === 'updated_at');
+
+    if (!hasS7TagsUpdatedAt) {
+      db.exec(`ALTER TABLE s7_tags ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
+      console.log('Added updated_at column to s7_tags table');
+    }
+  }
+
   // Create default admin user if users table is empty
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   if (userCount.count === 0) {
