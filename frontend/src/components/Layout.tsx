@@ -1,14 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import ThemeSwitcher from './ThemeSwitcher';
+import axios from 'axios';
 
 const Layout = () => {
   const { user, logout } = useAuth();
   const { themeColors } = useTheme();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [companyName, setCompanyName] = useState('CMMS');
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch company branding
+    const fetchBranding = async () => {
+      try {
+        const [nameRes, logoRes] = await Promise.all([
+          axios.get('/api/system/settings/company_name').catch(() => ({ data: { setting_value: 'CMMS' } })),
+          axios.get('/api/system/settings/company_logo').catch(() => ({ data: { setting_value: null } }))
+        ]);
+
+        setCompanyName(nameRes.data.setting_value || 'CMMS');
+        setCompanyLogo(logoRes.data.setting_value);
+      } catch (error) {
+        console.error('Failed to fetch branding:', error);
+      }
+    };
+
+    fetchBranding();
+  }, []);
 
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: '📊' },
@@ -26,6 +48,12 @@ const Layout = () => {
     navigation.push({ name: 'OPC Configuration', path: '/opc-config', icon: '🔌' });
     navigation.push({ name: 'S7 PLC Configuration', path: '/s7-config', icon: '🤖' });
     navigation.push({ name: 'Users', path: '/users', icon: '👥' });
+  }
+
+  if (user?.role === 'admin') {
+    navigation.push({ name: 'System Health', path: '/system-health', icon: '💚' });
+    navigation.push({ name: 'Admin Logs', path: '/admin-logs', icon: '📋' });
+    navigation.push({ name: 'System Settings', path: '/system-settings', icon: '⚙️' });
   }
 
   return (
@@ -46,9 +74,18 @@ const Layout = () => {
                 </svg>
               </button>
 
-              <div className="flex items-center">
-                <h1 className={`text-xl sm:text-2xl font-bold ${themeColors.colors.primaryText}`}>CMMS</h1>
-                <span className={`ml-2 text-xs sm:text-sm ${themeColors.colors.textMuted} hidden sm:inline`}>Maintenance Management</span>
+              <div className="flex items-center gap-3">
+                {companyLogo && (
+                  <img
+                    src={companyLogo}
+                    alt={`${companyName} Logo`}
+                    className="h-8 sm:h-10 w-auto object-contain"
+                  />
+                )}
+                <div>
+                  <h1 className={`text-xl sm:text-2xl font-bold ${themeColors.colors.primaryText}`}>{companyName}</h1>
+                  <span className={`text-xs ${themeColors.colors.textMuted} hidden sm:block`}>Maintenance Management</span>
+                </div>
               </div>
             </div>
 

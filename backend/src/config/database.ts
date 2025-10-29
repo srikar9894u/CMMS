@@ -240,12 +240,43 @@ export const initDatabase = () => {
     )
   `);
 
+  // System Settings table - stores application-wide settings
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      setting_key TEXT UNIQUE NOT NULL,
+      setting_value TEXT,
+      setting_type TEXT DEFAULT 'string' CHECK(setting_type IN ('string', 'number', 'boolean', 'json')),
+      description TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_by INTEGER,
+      FOREIGN KEY (updated_by) REFERENCES users(id)
+    )
+  `);
+
+  // Application Logs table - stores application events and errors
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS application_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      log_level TEXT NOT NULL CHECK(log_level IN ('ERROR', 'WARN', 'INFO', 'DEBUG')),
+      source TEXT NOT NULL,
+      message TEXT NOT NULL,
+      details TEXT,
+      user_id INTEGER,
+      ip_address TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
   // Create indexes for faster queries
   db.exec(`CREATE INDEX IF NOT EXISTS idx_asset_status_log_asset_time ON asset_status_log(asset_id, timestamp DESC)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_asset ON opc_tags(asset_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_connection ON opc_tags(opc_connection_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_s7_tags_asset ON s7_tags(asset_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_s7_tags_connection ON s7_tags(s7_connection_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_application_logs_timestamp ON application_logs(timestamp DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_application_logs_level ON application_logs(log_level, timestamp DESC)`);
 
   // Migration: Add name column to opc_connections if it doesn't exist (for migration from old schema)
   const opcConnColumns = db.prepare("PRAGMA table_info(opc_connections)").all() as any[];
@@ -376,6 +407,28 @@ export const initDatabase = () => {
       VALUES (?, ?, ?, ?, ?)
     `).run('admin', 'admin@cmms.local', hashedPassword, 'admin', 'System Administrator');
     console.log('Default admin user created: admin/admin123');
+  }
+
+  // Initialize default system settings if table is empty
+  const settingsCount = db.prepare('SELECT COUNT(*) as count FROM system_settings').get() as { count: number };
+  if (settingsCount.count === 0) {
+    const defaultSettings = [
+      { key: 'company_name', value: 'CMMS', type: 'string', description: 'Company or organization name' },
+      { key: 'company_logo', value: null, type: 'string', description: 'Path to company logo file' },
+      { key: 'system_timezone', value: 'UTC', type: 'string', description: 'System timezone' },
+      { key: 'maintenance_mode', value: 'false', type: 'boolean', description: 'System maintenance mode' },
+      { key: 'max_upload_size', value: '5242880', type: 'number', description: 'Maximum upload size in bytes (5MB)' },
+    ];
+
+    const insertSetting = db.prepare(`
+      INSERT INTO system_settings (setting_key, setting_value, setting_type, description)
+      VALUES (?, ?, ?, ?)
+    `);
+
+    for (const setting of defaultSettings) {
+      insertSetting.run(setting.key, setting.value, setting.type, setting.description);
+    }
+    console.log('Default system settings initialized');
   }
 
   console.log('Database initialized successfully');

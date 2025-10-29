@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose build:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(sqlite3:*)",
+      "Bash(npm run build)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose:*)",
+      "Bash(dos2unix:*)",
+      "Bash(docker:*)",
+      "Bash(git --version)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(curl:*)",
+      "Bash(npm --prefix backend list:*)",
+      "Bash(npm install)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

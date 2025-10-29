@@ -18,6 +18,9 @@ import LeaveManagement from './pages/LeaveManagement';
 import OPCConfiguration from './pages/OPCConfiguration';
 import S7Configuration from './pages/S7Configuration';
 import RealTimeStatus from './pages/RealTimeStatus';
+import SystemHealth from './pages/SystemHealth';
+import AdminLogs from './pages/AdminLogs';
+import SystemSettings from './pages/SystemSettings';
 
 function App() {
   return (
@@ -42,6 +45,9 @@ function App() {
               <Route path="opc-config" element={<OPCConfiguration />} />
               <Route path="s7-config" element={<S7Configuration />} />
               <Route path="real-time-status" element={<RealTimeStatus />} />
+              <Route path="system-health" element={<SystemHealth />} />
+              <Route path="admin-logs" element={<AdminLogs />} />
+              <Route path="system-settings" element={<SystemSettings />} />
             </Route>
           </Routes>
         </Router>

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 import { initDatabase } from './config/database';
 
 // Import routes
@@ -16,6 +17,8 @@ import dashboardRoutes from './routes/dashboard.routes';
 import leaveRoutes from './routes/leave.routes';
 import opcRoutes from './routes/opc.routes';
 import s7Routes from './routes/s7.routes';
+import systemRoutes from './routes/system.routes';
+import uploadsRoutes from './routes/uploads.routes';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +40,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files (uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -53,6 +59,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/opc', opcRoutes);
 app.use('/api/s7', s7Routes);
+app.use('/api/system', systemRoutes);
+app.use('/api/uploads', uploadsRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
