@@ -42,7 +42,7 @@ jobs:
 
       - name: Upload audit results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: npm-audit-${{ matrix.directory }}
           path: ${{ matrix.directory }}/audit-results.json
@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload safety results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: python-safety-report
           path: opc-service/safety-report.json
