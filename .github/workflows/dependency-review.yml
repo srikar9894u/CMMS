@@ -1,0 +1,126 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    name: Review Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: always
+          deny-licenses: GPL-3.0, AGPL-3.0
+          warn-only: false
+
+  npm-outdated-check:
+    name: Check Outdated NPM Packages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [backend, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./${{ matrix.directory }}
+        run: npm ci
+
+      - name: Check for outdated packages
+        working-directory: ./${{ matrix.directory }}
+        run: |
+          echo "## 📦 Outdated Packages - ${{ matrix.directory }}" >> $GITHUB_STEP_SUMMARY
+          npm outdated || true
+          npm outdated --json > outdated.json || true
+          if [ -s outdated.json ]; then
+            echo "⚠️ Some packages are outdated" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+            cat outdated.json >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ All packages are up to date" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  python-outdated-check:
+    name: Check Outdated Python Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: ./opc-service
+        run: |
+          pip install --upgrade pip
+          pip install pip-audit
+          pip install -r requirements.txt
+
+      - name: Check for outdated packages
+        working-directory: ./opc-service
+        run: |
+          echo "## 📦 Python Package Audit" >> $GITHUB_STEP_SUMMARY
+          pip list --outdated || true
+          pip-audit || echo "⚠️ pip-audit found issues"
+
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install license-checker
+        run: npm install -g license-checker
+
+      - name: Check Backend licenses
+        working-directory: ./backend
+        run: |
+          npm ci
+          echo "## 📄 Backend License Summary" >> $GITHUB_STEP_SUMMARY
+          license-checker --summary >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Check Frontend licenses
+        working-directory: ./frontend
+        run: |
+          npm ci
+          echo "## 📄 Frontend License Summary" >> $GITHUB_STEP_SUMMARY
+          license-checker --summary >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Check for problematic licenses
+        working-directory: ./backend
+        run: |
+          license-checker --failOn "GPL-3.0;AGPL-3.0;LGPL-3.0" || {
+            echo "❌ Found problematic licenses" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }

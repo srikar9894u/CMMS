@@ -1,0 +1,94 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches: [ main, master ]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-sbom:
+    name: Generate Software Bill of Materials
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install Frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install OPC Service dependencies
+        working-directory: ./opc-service
+        run: pip install -r requirements.txt
+
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          path: ./
+          artifact-name: cmms-sbom.spdx.json
+          output-file: ./sbom/cmms-sbom.spdx.json
+          format: spdx-json
+
+      - name: Generate Backend SBOM (CycloneDX)
+        working-directory: ./backend
+        run: |
+          npx @cyclonedx/cyclonedx-npm --output-file ../sbom/backend-sbom.json
+
+      - name: Generate Frontend SBOM (CycloneDX)
+        working-directory: ./frontend
+        run: |
+          npx @cyclonedx/cyclonedx-npm --output-file ../sbom/frontend-sbom.json
+
+      - name: Generate Python SBOM
+        working-directory: ./opc-service
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements -r requirements.txt -o ../sbom/opc-service-sbom.json
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmms-sbom
+          path: sbom/
+          retention-days: 90
+
+      - name: Create SBOM summary
+        run: |
+          echo "## 📋 Software Bill of Materials Generated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "SBOMs have been generated for all components:" >> $GITHUB_STEP_SUMMARY
+          echo "- Complete SBOM (SPDX format)" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend SBOM (CycloneDX format)" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend SBOM (CycloneDX format)" >> $GITHUB_STEP_SUMMARY
+          echo "- OPC Service SBOM (CycloneDX format)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download artifacts from the workflow run." >> $GITHUB_STEP_SUMMARY
+
+      - name: Commit SBOM to repository
+        if: github.event_name == 'release'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add sbom/
+          git commit -m "chore: Update SBOM for release ${{ github.ref_name }}" || echo "No changes to commit"
+          git push

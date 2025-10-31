@@ -1,0 +1,64 @@
+name: "CodeQL Advanced Security"
+
+on:
+  push:
+    branches: [ main, master, develop, claude/* ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    # Run every Wednesday at 3:00 AM UTC
+    - cron: '0 3 * * 3'
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze Code
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python', 'typescript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Specify additional queries to run
+          queries: +security-extended,security-and-quality
+
+      # Autobuild attempts to build any compiled languages
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  codeql-summary:
+    name: CodeQL Summary
+    runs-on: ubuntu-latest
+    needs: analyze
+    if: always()
+
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🔍 CodeQL Analysis Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "CodeQL has scanned the codebase for security vulnerabilities." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Languages Analyzed:**" >> $GITHUB_STEP_SUMMARY
+          echo "- JavaScript/TypeScript (Backend & Frontend)" >> $GITHUB_STEP_SUMMARY
+          echo "- Python (OPC Service)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View results in the [Security tab](https://github.com/${{ github.repository }}/security/code-scanning)" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,134 @@
+version: 2
+updates:
+  # Backend (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "chore(backend)"
+      include: "scope"
+    # Group all patch updates into a single PR
+    groups:
+      backend-patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+    # Separate security updates
+    versioning-strategy: increase-if-necessary
+
+  # Frontend (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore(frontend)"
+      include: "scope"
+    groups:
+      frontend-patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+    versioning-strategy: increase-if-necessary
+
+  # OPC Service (Python)
+  - package-ecosystem: "pip"
+    directory: "/opc-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "opc-service"
+      - "python"
+    commit-message:
+      prefix: "chore(opc)"
+      include: "scope"
+    groups:
+      python-patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+
+  - package-ecosystem: "docker"
+    directory: "/opc-service"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+    reviewers:
+      - "srikar9894u"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
