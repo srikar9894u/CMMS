@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import db from '../config/database';
 import { authMiddleware, AuthRequest, roleMiddleware } from '../middleware/auth';
+import { logError, logWarning, logInfo } from '../utils/logger';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.get('/connections', (req: AuthRequest, res: Response) => {
 
     res.json(connections);
   } catch (error: any) {
-    console.error('Error fetching OPC connections:', error);
+    logError('opc.routes', 'Error fetching OPC connections', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch OPC connections' });
   }
 });
@@ -38,7 +39,7 @@ router.get('/connections/:id', (req: AuthRequest, res: Response) => {
 
     res.json(connection);
   } catch (error: any) {
-    console.error('Error fetching OPC connection:', error);
+    logError('opc.routes', 'Error fetching OPC connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch OPC connection' });
   }
 });
@@ -88,9 +89,10 @@ router.post('/connections', roleMiddleware('admin', 'manager'), (req: AuthReques
     );
 
     const newConnection = db.prepare('SELECT * FROM opc_connections WHERE id = ?').get(result.lastInsertRowid);
+    logInfo('opc.routes', `OPC connection created: ${name}`, { connection_id: result.lastInsertRowid }, req.user?.id, req.ip);
     res.status(201).json(newConnection);
   } catch (error: any) {
-    console.error('Error creating OPC connection:', error);
+    logError('opc.routes', 'Error creating OPC connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to create OPC connection' });
   }
 });
@@ -160,9 +162,10 @@ router.put('/connections/:id', roleMiddleware('admin', 'manager'), (req: AuthReq
     db.prepare(`UPDATE opc_connections SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
     const updated = db.prepare('SELECT * FROM opc_connections WHERE id = ?').get(req.params.id);
+    logInfo('opc.routes', `OPC connection updated: ID ${req.params.id}`, { connection_id: req.params.id }, req.user?.id, req.ip);
     res.json(updated);
   } catch (error: any) {
-    console.error('Error updating OPC connection:', error);
+    logError('opc.routes', 'Error updating OPC connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to update OPC connection' });
   }
 });
@@ -176,10 +179,35 @@ router.delete('/connections/:id', roleMiddleware('admin', 'manager'), (req: Auth
       return res.status(404).json({ error: 'OPC connection not found' });
     }
 
+    logInfo('opc.routes', `OPC connection deleted: ID ${req.params.id}`, { connection_id: req.params.id }, req.user?.id, req.ip);
     res.json({ message: 'OPC connection deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting OPC connection:', error);
+    logError('opc.routes', 'Error deleting OPC connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to delete OPC connection' });
+  }
+});
+
+// Get all OPC tags (for tags management view)
+router.get('/tags', (req: AuthRequest, res: Response) => {
+  try {
+    const tags = db.prepare(`
+      SELECT
+        ot.*,
+        a.name as asset_name,
+        a.asset_tag,
+        oc.name as connection_name,
+        oc.plc_type,
+        oc.server_url
+      FROM opc_tags ot
+      JOIN assets a ON ot.asset_id = a.id
+      JOIN opc_connections oc ON ot.opc_connection_id = oc.id
+      ORDER BY oc.name, a.name, ot.tag_type
+    `).all();
+
+    res.json(tags);
+  } catch (error: any) {
+    logError('opc.routes', 'Error fetching all OPC tags', error, req.user?.id, req.ip);
+    res.status(500).json({ error: 'Failed to fetch OPC tags' });
   }
 });
 
@@ -199,7 +227,7 @@ router.get('/connections/:id/tags', (req: AuthRequest, res: Response) => {
 
     res.json(tags);
   } catch (error: any) {
-    console.error('Error fetching OPC tags:', error);
+    logError('opc.routes', 'Error fetching OPC tags', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch OPC tags' });
   }
 });
@@ -221,7 +249,7 @@ router.get('/assets/:assetId/tags', (req: AuthRequest, res: Response) => {
 
     res.json(tags);
   } catch (error: any) {
-    console.error('Error fetching asset tags:', error);
+    logError('opc.routes', 'Error fetching asset tags', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch asset tags' });
   }
 });
@@ -267,7 +295,7 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
       tag_name,
       tag_address,
       data_type || 'boolean',
-      invert_logic || 0,
+      invert_logic ? 1 : 0,  // Properly convert boolean to integer
       description || null
     );
 
@@ -281,12 +309,14 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
       WHERE ot.id = ?
     `).get(result.lastInsertRowid);
 
+    logInfo('opc.routes', `OPC tag created for asset ${asset_id}`, { tag_id: result.lastInsertRowid, asset_id: asset_id, tag_type: tag_type }, req.user?.id, req.ip);
     res.status(201).json(newTag);
   } catch (error: any) {
     if (error.message.includes('UNIQUE constraint failed')) {
+      logWarning('opc.routes', 'Duplicate OPC tag attempt', { asset_id: req.body.asset_id, tag_type: req.body.tag_type }, req.user?.id, req.ip);
       return res.status(400).json({ error: 'This tag type already exists for this asset on this PLC' });
     }
-    console.error('Error creating OPC tag:', error);
+    logError('opc.routes', 'Error creating OPC tag', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to create OPC tag' });
   }
 });
@@ -347,9 +377,10 @@ router.put('/tags/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest, r
       WHERE ot.id = ?
     `).get(req.params.id);
 
+    logInfo('opc.routes', `OPC tag updated: ID ${req.params.id}`, { tag_id: req.params.id }, req.user?.id, req.ip);
     res.json(updated);
   } catch (error: any) {
-    console.error('Error updating OPC tag:', error);
+    logError('opc.routes', 'Error updating OPC tag', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to update OPC tag' });
   }
 });
@@ -363,9 +394,10 @@ router.delete('/tags/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest
       return res.status(404).json({ error: 'Tag not found' });
     }
 
+    logInfo('opc.routes', `OPC tag deleted: ID ${req.params.id}`, { tag_id: req.params.id }, req.user?.id, req.ip);
     res.json({ message: 'Tag deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting tag:', error);
+    logError('opc.routes', 'Error deleting tag', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to delete tag' });
   }
 });
@@ -386,7 +418,7 @@ router.get('/assets/:id/status-history', (req: AuthRequest, res: Response) => {
 
     res.json(history);
   } catch (error: any) {
-    console.error('Error fetching status history:', error);
+    logError('opc.routes', 'Error fetching status history', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch status history' });
   }
 });
@@ -415,7 +447,7 @@ router.get('/status/current', (req: AuthRequest, res: Response) => {
 
     res.json(statuses);
   } catch (error: any) {
-    console.error('Error fetching current statuses:', error);
+    logError('opc.routes', 'Error fetching current statuses', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch current statuses' });
   }
 });
@@ -431,7 +463,7 @@ router.get('/assets/all', (req: AuthRequest, res: Response) => {
 
     res.json(assets);
   } catch (error: any) {
-    console.error('Error fetching assets:', error);
+    logError('opc.routes', 'Error fetching assets', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch assets' });
   }
 });

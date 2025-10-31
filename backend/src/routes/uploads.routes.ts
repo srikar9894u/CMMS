@@ -7,6 +7,13 @@ import fs from 'fs';
 
 const router = Router();
 
+// Get uploads directory based on environment
+const getUploadsDir = () => {
+  return process.env.NODE_ENV === 'production'
+    ? '/data/uploads'
+    : path.join(__dirname, '../../uploads');
+};
+
 // Apply authentication middleware to all routes
 router.use(authMiddleware);
 
@@ -31,7 +38,8 @@ router.post('/logo', roleMiddleware('admin'), uploadImage.single('logo'), (req: 
 
     // Delete old logo file if exists
     if (oldSetting?.setting_value) {
-      const oldFilePath = path.join(__dirname, '../../', oldSetting.setting_value);
+      const filename = path.basename(oldSetting.setting_value);
+      const oldFilePath = path.join(getUploadsDir(), filename);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath);
       }
@@ -54,7 +62,7 @@ router.post('/logo', roleMiddleware('admin'), uploadImage.single('logo'), (req: 
 
     // Delete uploaded file if database update failed
     if (req.file) {
-      const filePath = path.join(__dirname, '../../uploads', req.file.filename);
+      const filePath = path.join(getUploadsDir(), req.file.filename);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -75,7 +83,8 @@ router.delete('/logo', roleMiddleware('admin'), (req: AuthRequest, res: Response
     }
 
     // Delete file
-    const filePath = path.join(__dirname, '../../', setting.setting_value);
+    const filename = path.basename(setting.setting_value);
+    const filePath = path.join(getUploadsDir(), filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }

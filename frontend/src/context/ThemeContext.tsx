@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { themes, ThemeColors, ThemeName, getThemeByName } from '../config/themes';
 import { useAuth } from './AuthContext';
+import { useUIEngine } from './UIEngineContext';
 
 interface ThemeContextType {
   theme: ThemeName;
@@ -13,6 +14,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const { isLoading: uiEngineLoading } = useUIEngine();
   const [theme, setThemeState] = useState<ThemeName>(() => {
     // Try to get theme from localStorage first
     const savedTheme = localStorage.getItem('theme') as ThemeName;
@@ -57,6 +59,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const themeColors = getThemeByName(theme);
+
+  // Show loading state while UI Engine initializes
+  if (uiEngineLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">Loading UI Theme...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, themeColors }}>

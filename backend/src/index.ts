@@ -19,6 +19,12 @@ import opcRoutes from './routes/opc.routes';
 import s7Routes from './routes/s7.routes';
 import systemRoutes from './routes/system.routes';
 import uploadsRoutes from './routes/uploads.routes';
+import documentsRoutes from './routes/documents.routes';
+import tripFeedbackRoutes from './routes/trip-feedback.routes';
+import pmSchedulerRoutes from './routes/pm-scheduler.routes';
+
+// Import services
+import { PMSchedulerService } from './services/pm-scheduler.service';
 
 // Load environment variables
 dotenv.config();
@@ -31,17 +37,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" } // Allow cross-origin image loading
+}));
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173', // Development
+    'http://localhost',      // Production (frontend on port 80)
+    'http://localhost:80'
+  ],
   credentials: true
 }));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (uploaded images)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve static files (uploaded documents and images)
+const uploadsPath = process.env.NODE_ENV === 'production'
+  ? '/data/uploads'
+  : path.join(__dirname, '../uploads');
+
+// Add CORS headers for static files
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
+app.use('/uploads', express.static(uploadsPath));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -61,6 +83,9 @@ app.use('/api/opc', opcRoutes);
 app.use('/api/s7', s7Routes);
 app.use('/api/system', systemRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/documents', documentsRoutes);
+app.use('/api/trip-feedback', tripFeedbackRoutes);
+app.use('/api/pm-scheduler', pmSchedulerRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -74,6 +99,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 app.listen(PORT, () => {
   console.log(`CMMS Backend API running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Start PM Scheduler
+  PMSchedulerService.startScheduler();
+  console.log('PM Auto-Scheduler initialized');
 });
 
 export default app;

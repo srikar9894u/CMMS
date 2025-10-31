@@ -8,6 +8,7 @@ interface User {
   role: string;
   full_name?: string;
   theme?: string;
+  sub_role?: string | null;
 }
 
 interface AuthContextType {

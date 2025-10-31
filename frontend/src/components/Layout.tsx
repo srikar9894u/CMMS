@@ -23,7 +23,14 @@ const Layout = () => {
         ]);
 
         setCompanyName(nameRes.data.setting_value || 'CMMS');
-        setCompanyLogo(logoRes.data.setting_value);
+
+        // Prepend backend URL to logo path if it exists
+        const logoPath = logoRes.data.setting_value;
+        if (logoPath) {
+          setCompanyLogo(`http://localhost:3000${logoPath}`);
+        } else {
+          setCompanyLogo(null);
+        }
       } catch (error) {
         console.error('Failed to fetch branding:', error);
       }
@@ -39,14 +46,20 @@ const Layout = () => {
     { name: 'Preventive Maintenance', path: '/preventive-maintenance', icon: '⚙️' },
     { name: '52-Week Calendar', path: '/pm-calendar', icon: '📅' },
     { name: 'Inventory', path: '/inventory', icon: '📦' },
+    { name: 'Document Library', path: '/documents', icon: '📚' },
     { name: 'Reports', path: '/reports', icon: '📈' },
     { name: 'Leave Management', path: '/leave', icon: '🏖️' },
     { name: 'Real-Time Status', path: '/real-time-status', icon: '🔴' },
   ];
 
+  // Add Trip Feedback for electrical sub-role users
+  if (user?.sub_role === 'electrical') {
+    navigation.push({ name: 'Trip Feedback', path: '/trip-feedback', icon: '🚨' });
+  }
+
   if (user?.role === 'admin' || user?.role === 'manager') {
-    navigation.push({ name: 'OPC Configuration', path: '/opc-config', icon: '🔌' });
-    navigation.push({ name: 'S7 PLC Configuration', path: '/s7-config', icon: '🤖' });
+    navigation.push({ name: 'PLC Configuration', path: '/plc-config', icon: '🔌' });
+    navigation.push({ name: 'Tags Management', path: '/tags-management', icon: '🏷️' });
     navigation.push({ name: 'Users', path: '/users', icon: '👥' });
   }
 
@@ -109,7 +122,7 @@ const Layout = () => {
         {/* Mobile sidebar overlay */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
@@ -117,7 +130,7 @@ const Layout = () => {
         {/* Sidebar */}
         <aside
           className={`
-            fixed md:sticky top-16 left-0 z-40
+            fixed md:sticky top-16 left-0 z-30
             w-64 ${themeColors.colors.foreground} shadow-sm
             min-h-[calc(100vh-4rem)] transform transition-transform duration-300 ease-in-out
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}

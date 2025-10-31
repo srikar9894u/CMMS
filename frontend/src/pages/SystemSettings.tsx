@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
+import ThemeSelector from '../components/ThemeSelector';
 
 interface SystemSetting {
   id: number;
@@ -187,6 +188,12 @@ const SystemSettings = () => {
             Accepted formats: JPEG, PNG, GIF, SVG. Maximum size: 5MB
           </p>
         </div>
+      </div>
+
+      {/* UI Theme Selector */}
+      <div className="mb-6">
+        <h2 className={`text-xl font-semibold ${themeColors.colors.textPrimary} mb-4`}>UI Theme</h2>
+        <ThemeSelector />
       </div>
 
       {/* All Settings Table */}

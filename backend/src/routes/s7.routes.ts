@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import db from '../config/database';
 import { authMiddleware, AuthRequest, roleMiddleware } from '../middleware/auth';
+import { logError, logWarning, logInfo } from '../utils/logger';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.get('/connections', (req: AuthRequest, res: Response) => {
 
     res.json(connections);
   } catch (error: any) {
-    console.error('Error fetching S7 connections:', error);
+    logError('s7.routes', 'Error fetching S7 connections', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch S7 connections' });
   }
 });
@@ -38,7 +39,7 @@ router.get('/connections/:id', (req: AuthRequest, res: Response) => {
 
     res.json(connection);
   } catch (error: any) {
-    console.error('Error fetching S7 connection:', error);
+    logError('s7.routes', 'Error fetching S7 connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch S7 connection' });
   }
 });
@@ -93,9 +94,10 @@ router.post('/connections', roleMiddleware('admin', 'manager'), (req: AuthReques
     );
 
     const newConnection = db.prepare('SELECT * FROM s7_connections WHERE id = ?').get(result.lastInsertRowid);
+    logInfo('s7.routes', `S7 connection created: ${name}`, { connection_id: result.lastInsertRowid }, req.user?.id, req.ip);
     res.status(201).json(newConnection);
   } catch (error: any) {
-    console.error('Error creating S7 connection:', error);
+    logError('s7.routes', 'Error creating S7 connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to create S7 connection' });
   }
 });
@@ -165,9 +167,10 @@ router.put('/connections/:id', roleMiddleware('admin', 'manager'), (req: AuthReq
     db.prepare(`UPDATE s7_connections SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
     const updated = db.prepare('SELECT * FROM s7_connections WHERE id = ?').get(req.params.id);
+    logInfo('s7.routes', `S7 connection updated: ID ${req.params.id}`, { connection_id: req.params.id }, req.user?.id, req.ip);
     res.json(updated);
   } catch (error: any) {
-    console.error('Error updating S7 connection:', error);
+    logError('s7.routes', 'Error updating S7 connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to update S7 connection' });
   }
 });
@@ -181,10 +184,37 @@ router.delete('/connections/:id', roleMiddleware('admin', 'manager'), (req: Auth
       return res.status(404).json({ error: 'S7 connection not found' });
     }
 
+    logInfo('s7.routes', `S7 connection deleted: ID ${req.params.id}`, { connection_id: req.params.id }, req.user?.id, req.ip);
     res.json({ message: 'S7 connection deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting S7 connection:', error);
+    logError('s7.routes', 'Error deleting S7 connection', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to delete S7 connection' });
+  }
+});
+
+// Get all S7 tags (for tags management view)
+router.get('/tags', (req: AuthRequest, res: Response) => {
+  try {
+    const tags = db.prepare(`
+      SELECT
+        st.*,
+        a.name as asset_name,
+        a.asset_tag,
+        sc.name as connection_name,
+        sc.plc_type,
+        sc.ip_address,
+        sc.rack,
+        sc.slot
+      FROM s7_tags st
+      JOIN assets a ON st.asset_id = a.id
+      JOIN s7_connections sc ON st.s7_connection_id = sc.id
+      ORDER BY sc.name, a.name, st.tag_type
+    `).all();
+
+    res.json(tags);
+  } catch (error: any) {
+    logError('s7.routes', 'Error fetching all S7 tags', error, req.user?.id, req.ip);
+    res.status(500).json({ error: 'Failed to fetch S7 tags' });
   }
 });
 
@@ -204,7 +234,7 @@ router.get('/connections/:id/tags', (req: AuthRequest, res: Response) => {
 
     res.json(tags);
   } catch (error: any) {
-    console.error('Error fetching S7 tags:', error);
+    logError('s7.routes', 'Error fetching S7 tags', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch S7 tags' });
   }
 });
@@ -228,7 +258,7 @@ router.get('/assets/:assetId/tags', (req: AuthRequest, res: Response) => {
 
     res.json(tags);
   } catch (error: any) {
-    console.error('Error fetching asset S7 tags:', error);
+    logError('s7.routes', 'Error fetching asset S7 tags', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch asset S7 tags' });
   }
 });
@@ -248,7 +278,7 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
     } = req.body;
 
     // Log incoming request for debugging
-    console.log('Creating S7 tag with data:', {
+    logInfo('s7.routes', 'Creating S7 tag', {
       s7_connection_id,
       asset_id,
       tag_type,
@@ -256,7 +286,7 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
       tag_address,
       data_type,
       invert_logic
-    });
+    }, req.user?.id, req.ip);
 
     if (!s7_connection_id || !asset_id || !tag_type || !tag_name || !tag_address) {
       return res.status(400).json({ error: 'Connection, asset, tag type, name, and address are required' });
@@ -290,7 +320,7 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
       tag_name,
       tag_address,
       data_type || 'boolean',
-      invert_logic || 0,
+      invert_logic ? 1 : 0,  // Properly convert boolean to integer
       description || null
     );
 
@@ -304,24 +334,22 @@ router.post('/tags', roleMiddleware('admin', 'manager'), (req: AuthRequest, res:
       WHERE st.id = ?
     `).get(result.lastInsertRowid);
 
+    logInfo('s7.routes', `S7 tag created for asset ${asset_id}`, { tag_id: result.lastInsertRowid, asset_id: asset_id, tag_type: tag_type }, req.user?.id, req.ip);
     res.status(201).json(newTag);
   } catch (error: any) {
     if (error.message.includes('UNIQUE constraint failed')) {
+      logWarning('s7.routes', 'Duplicate S7 tag attempt', { asset_id: req.body.asset_id, tag_type: req.body.tag_type }, req.user?.id, req.ip);
       return res.status(400).json({ error: 'This tag type already exists for this asset on this PLC' });
     }
     if (error.message.includes('CHECK constraint failed')) {
+      logWarning('s7.routes', 'Invalid S7 tag type', { tag_type: req.body.tag_type }, req.user?.id, req.ip);
       return res.status(400).json({ error: 'Invalid tag type. Must be: running, trip, off, or custom' });
     }
     if (error.message.includes('FOREIGN KEY constraint failed')) {
+      logWarning('s7.routes', 'Invalid S7 connection or asset ID', { s7_connection_id: req.body.s7_connection_id, asset_id: req.body.asset_id }, req.user?.id, req.ip);
       return res.status(400).json({ error: 'Invalid connection or asset ID' });
     }
-    console.error('Error creating S7 tag:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      errno: error.errno,
-      stack: error.stack
-    });
+    logError('s7.routes', 'Error creating S7 tag', error, req.user?.id, req.ip);
     res.status(500).json({
       error: 'Failed to create S7 tag',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -385,9 +413,10 @@ router.put('/tags/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest, r
       WHERE st.id = ?
     `).get(req.params.id);
 
+    logInfo('s7.routes', `S7 tag updated: ID ${req.params.id}`, { tag_id: req.params.id }, req.user?.id, req.ip);
     res.json(updated);
   } catch (error: any) {
-    console.error('Error updating S7 tag:', error);
+    logError('s7.routes', 'Error updating S7 tag', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to update S7 tag' });
   }
 });
@@ -401,9 +430,10 @@ router.delete('/tags/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest
       return res.status(404).json({ error: 'Tag not found' });
     }
 
+    logInfo('s7.routes', `S7 tag deleted: ID ${req.params.id}`, { tag_id: req.params.id }, req.user?.id, req.ip);
     res.json({ message: 'Tag deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting S7 tag:', error);
+    logError('s7.routes', 'Error deleting S7 tag', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to delete S7 tag' });
   }
 });
@@ -424,7 +454,7 @@ router.get('/assets/:id/status-history', (req: AuthRequest, res: Response) => {
 
     res.json(history);
   } catch (error: any) {
-    console.error('Error fetching status history:', error);
+    logError('s7.routes', 'Error fetching status history', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch status history' });
   }
 });
@@ -453,7 +483,7 @@ router.get('/status/current', (req: AuthRequest, res: Response) => {
 
     res.json(statuses);
   } catch (error: any) {
-    console.error('Error fetching current S7 statuses:', error);
+    logError('s7.routes', 'Error fetching current S7 statuses', error, req.user?.id, req.ip);
     res.status(500).json({ error: 'Failed to fetch current S7 statuses' });
   }
 });

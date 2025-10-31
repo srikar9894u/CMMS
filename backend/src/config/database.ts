@@ -269,6 +269,50 @@ export const initDatabase = () => {
     )
   `);
 
+  // Documents Library table - stores all documents, manuals, drawings, and links
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      category TEXT NOT NULL CHECK(category IN ('manual', 'drawing', 'specification', 'report', 'procedure', 'link', 'other')),
+      file_path TEXT,
+      file_type TEXT,
+      file_size INTEGER,
+      original_filename TEXT,
+      external_url TEXT,
+      asset_id INTEGER,
+      inventory_id INTEGER,
+      tags TEXT,
+      download_count INTEGER DEFAULT 0,
+      uploaded_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE SET NULL,
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE SET NULL,
+      FOREIGN KEY (uploaded_by) REFERENCES users(id)
+    )
+  `);
+
+  // Trip Feedback table - stores trip reports from electrical users
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS trip_feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      asset_id INTEGER NOT NULL,
+      trip_time DATETIME NOT NULL,
+      trip_reason TEXT,
+      description TEXT,
+      reported_by INTEGER NOT NULL,
+      work_order_id INTEGER,
+      status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'work_order_created', 'resolved')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (reported_by) REFERENCES users(id),
+      FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE SET NULL
+    )
+  `);
+
   // Create indexes for faster queries
   db.exec(`CREATE INDEX IF NOT EXISTS idx_asset_status_log_asset_time ON asset_status_log(asset_id, timestamp DESC)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_asset ON opc_tags(asset_id)`);
@@ -277,6 +321,13 @@ export const initDatabase = () => {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_s7_tags_connection ON s7_tags(s7_connection_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_application_logs_timestamp ON application_logs(timestamp DESC)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_application_logs_level ON application_logs(log_level, timestamp DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_documents_asset ON documents(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_documents_inventory ON documents(inventory_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_documents_category ON documents(category)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_documents_created ON documents(created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_trip_feedback_asset ON trip_feedback(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_trip_feedback_status ON trip_feedback(status)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_trip_feedback_created ON trip_feedback(created_at DESC)`);
 
   // Migration: Add name column to opc_connections if it doesn't exist (for migration from old schema)
   const opcConnColumns = db.prepare("PRAGMA table_info(opc_connections)").all() as any[];
@@ -418,6 +469,8 @@ export const initDatabase = () => {
       { key: 'system_timezone', value: 'UTC', type: 'string', description: 'System timezone' },
       { key: 'maintenance_mode', value: 'false', type: 'boolean', description: 'System maintenance mode' },
       { key: 'max_upload_size', value: '5242880', type: 'number', description: 'Maximum upload size in bytes (5MB)' },
+      { key: 'ui_theme', value: 'industrial-pro', type: 'string', description: 'Application-wide UI theme' },
+      { key: 'animations_enabled', value: 'true', type: 'boolean', description: 'Enable UI animations and transitions' },
     ];
 
     const insertSetting = db.prepare(`
@@ -429,6 +482,25 @@ export const initDatabase = () => {
       insertSetting.run(setting.key, setting.value, setting.type, setting.description);
     }
     console.log('Default system settings initialized');
+  }
+
+  // Migration: Add ui_theme and animations_enabled settings if they don't exist
+  const uiThemeSetting = db.prepare('SELECT * FROM system_settings WHERE setting_key = ?').get('ui_theme');
+  if (!uiThemeSetting) {
+    db.prepare(`
+      INSERT INTO system_settings (setting_key, setting_value, setting_type, description)
+      VALUES (?, ?, ?, ?)
+    `).run('ui_theme', 'industrial-pro', 'string', 'Application-wide UI theme');
+    console.log('Added ui_theme system setting');
+  }
+
+  const animationsSetting = db.prepare('SELECT * FROM system_settings WHERE setting_key = ?').get('animations_enabled');
+  if (!animationsSetting) {
+    db.prepare(`
+      INSERT INTO system_settings (setting_key, setting_value, setting_type, description)
+      VALUES (?, ?, ?, ?)
+    `).run('animations_enabled', 'true', 'boolean', 'Enable UI animations and transitions');
+    console.log('Added animations_enabled system setting');
   }
 
   console.log('Database initialized successfully');
