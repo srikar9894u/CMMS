@@ -1,0 +1,34 @@
+# Bandit security configuration for Python OPC Service
+# https://bandit.readthedocs.io/en/latest/config.html
+
+[bandit]
+# Exclude test and virtual environment directories
+exclude_dirs = ['/tests', '/venv', '/.venv', '/build', '/dist']
+
+# Severity level to report (all levels: LOW, MEDIUM, HIGH)
+level = MEDIUM
+
+# Confidence level to report (all levels: LOW, MEDIUM, HIGH)
+confidence = MEDIUM
+
+# Tests to skip (comma-separated list of test IDs)
+# B404,B603: Consider security implications of subprocess module (we use it for PLC communication)
+# B608: Possible SQL injection (we use parameterized queries)
+skips = []
+
+# Tests to run (leave empty to run all tests)
+tests = []
+
+[bandit.formatters]
+# Output format: text, json, csv, xml, yaml, sarif
+format = sarif
+output = bandit-report.sarif
+
+[bandit.plugins]
+# Enable specific plugins
+# B201: Flask app with debug=True
+# B301-B324: Pickle, marshal, and other unsafe deserialization
+# B401-B404: Import of potentially dangerous modules
+# B501-B509: Weak cryptographic key size, algorithms
+# B601-B611: Shell injection, SQL injection, command injection
+# B701-B703: Jinja2 autoescape, use of eval(), use of exec()

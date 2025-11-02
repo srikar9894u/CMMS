@@ -154,7 +154,7 @@ Users can report vulnerabilities via:
    - Creates private communication channel
    - Allows collaboration before disclosure
 
-2. **Email**: Srikar.Tanukula@zabeelfeed.ae
+2. **Email**: srikar.989@gmail.com
    - For users not familiar with GitHub
    - Manually create advisory after triage
 

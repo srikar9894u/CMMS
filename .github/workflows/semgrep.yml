@@ -1,0 +1,64 @@
+name: Semgrep Security Scan
+
+on:
+  push:
+    branches: [ main, master, develop, claude/* ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    # Run every Tuesday at 10:00 AM UTC
+    - cron: '0 10 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  semgrep:
+    name: Semgrep SAST Scan
+    runs-on: ubuntu-latest
+
+    container:
+      image: returntocorp/semgrep
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan --config=auto \
+            --sarif \
+            --output=semgrep-results.sarif \
+            --severity=ERROR \
+            --severity=WARNING
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep-results.sarif
+          category: semgrep
+
+      - name: Run Semgrep with detailed output
+        run: |
+          semgrep scan --config=auto \
+            --verbose \
+            --json \
+            --output=semgrep-detailed.json
+
+      - name: Upload detailed results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-detailed-results
+          path: semgrep-detailed.json
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 🔍 Semgrep SAST Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          semgrep scan --config=auto --text >> $GITHUB_STEP_SUMMARY || true

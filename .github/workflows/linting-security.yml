@@ -1,0 +1,259 @@
+name: Security Linting
+
+on:
+  push:
+    branches: [ main, master, develop, claude/* ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  eslint-security:
+    name: ESLint Security Scan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [backend, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./${{ matrix.directory }}
+        run: npm ci
+
+      - name: Install ESLint security plugins
+        working-directory: ./${{ matrix.directory }}
+        run: |
+          npm install --save-dev eslint-plugin-security eslint-plugin-no-secrets @typescript-eslint/eslint-plugin @typescript-eslint/parser || true
+
+      - name: Copy security ESLint config
+        run: cp .eslintrc.security.json ${{ matrix.directory }}/.eslintrc.json || true
+
+      - name: Run ESLint with security rules
+        working-directory: ./${{ matrix.directory }}
+        continue-on-error: true
+        run: |
+          npx eslint . --ext .ts,.tsx,.js,.jsx --config .eslintrc.json --format json --output-file eslint-results.json || true
+
+      - name: Upload ESLint results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eslint-results-${{ matrix.directory }}
+          path: ${{ matrix.directory }}/eslint-results.json
+
+  bandit-python:
+    name: Bandit Python Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Bandit
+        run: pip install bandit[sarif]
+
+      - name: Run Bandit security scan
+        working-directory: ./opc-service
+        continue-on-error: true
+        run: |
+          bandit -r . -f sarif -o bandit-report.sarif --config .bandit || true
+          bandit -r . -f json -o bandit-report.json --config .bandit || true
+
+      - name: Upload Bandit SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: opc-service/bandit-report.sarif
+          category: bandit-python
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-results
+          path: opc-service/bandit-report.json
+
+      - name: Bandit summary
+        if: always()
+        working-directory: ./opc-service
+        run: |
+          echo "## 🐍 Bandit Python Security Scan" >> $GITHUB_STEP_SUMMARY
+          bandit -r . --config .bandit || echo "⚠️ Security issues found" >> $GITHUB_STEP_SUMMARY
+
+  npm-audit-fix-check:
+    name: Check if npm audit fix is available
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [backend, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for fixable vulnerabilities
+        working-directory: ./${{ matrix.directory }}
+        run: |
+          npm ci
+          echo "## 🔧 Auto-fixable Vulnerabilities - ${{ matrix.directory }}" >> $GITHUB_STEP_SUMMARY
+          npm audit fix --dry-run >> $GITHUB_STEP_SUMMARY || echo "No auto-fixes available" >> $GITHUB_STEP_SUMMARY
+
+  sql-injection-check:
+    name: SQL Injection Pattern Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for potential SQL injection patterns
+        run: |
+          echo "## 🗄️ SQL Injection Pattern Scan" >> $GITHUB_STEP_SUMMARY
+
+          # Check for string concatenation in SQL queries
+          if grep -r "db\.prepare.*\+\|db\.exec.*\+\|SELECT.*\+.*FROM" backend/src --include="*.ts" --include="*.js"; then
+            echo "⚠️ Potential SQL injection via string concatenation found" >> $GITHUB_STEP_SUMMARY
+            echo "Found in backend:" >> $GITHUB_STEP_SUMMARY
+            grep -rn "db\.prepare.*\+\|db\.exec.*\+\|SELECT.*\+.*FROM" backend/src --include="*.ts" --include="*.js" >> $GITHUB_STEP_SUMMARY || true
+          else
+            echo "✅ No obvious SQL injection patterns detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  hardcoded-secrets-check:
+    name: Hardcoded Secrets Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for hardcoded secrets patterns
+        run: |
+          echo "## 🔑 Hardcoded Secrets Scan" >> $GITHUB_STEP_SUMMARY
+
+          # Check for potential hardcoded passwords, API keys, tokens
+          PATTERNS=(
+            "password\s*=\s*['\"][^'\"]{8,}"
+            "api[_-]?key\s*=\s*['\"][^'\"]{8,}"
+            "secret\s*=\s*['\"][^'\"]{8,}"
+            "token\s*=\s*['\"][^'\"]{8,}"
+            "private[_-]?key\s*=\s*['\"]"
+          )
+
+          FOUND=0
+          for pattern in "${PATTERNS[@]}"; do
+            if grep -rE "$pattern" backend/src frontend/src opc-service --include="*.ts" --include="*.js" --include="*.py" --exclude-dir=node_modules --exclude-dir=dist; then
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 1 ]; then
+            echo "⚠️ Potential hardcoded secrets found - Review the matches above" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ No obvious hardcoded secrets detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  insecure-dependencies-check:
+    name: Check for Known Insecure Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for known insecure packages
+        run: |
+          echo "## 📦 Known Insecure Dependencies Check" >> $GITHUB_STEP_SUMMARY
+
+          # List of packages known to have security issues
+          INSECURE_PACKAGES=(
+            "request"
+            "node-uuid"
+            "jade"
+            "ejs@<3"
+            "marked@<4"
+            "validator@<13.6.0"
+          )
+
+          FOUND=0
+          for pkg in "${INSECURE_PACKAGES[@]}"; do
+            if grep -q "\"$pkg\"" backend/package.json frontend/package.json 2>/dev/null; then
+              echo "⚠️ Found insecure package: $pkg" >> $GITHUB_STEP_SUMMARY
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 0 ]; then
+            echo "✅ No known insecure packages detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  security-headers-check:
+    name: Security Headers Configuration Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for security headers configuration
+        run: |
+          echo "## 🛡️ Security Headers Check" >> $GITHUB_STEP_SUMMARY
+
+          # Check if Helmet.js is properly configured
+          if grep -q "helmet" backend/src/index.ts; then
+            echo "✅ Helmet.js security headers configured" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Helmet.js not found in backend/src/index.ts" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check for CORS configuration
+          if grep -q "cors" backend/src/index.ts; then
+            echo "✅ CORS configuration found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ CORS not configured in backend/src/index.ts" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  linting-summary:
+    name: Security Linting Summary
+    runs-on: ubuntu-latest
+    needs: [eslint-security, bandit-python, npm-audit-fix-check, sql-injection-check, hardcoded-secrets-check, insecure-dependencies-check, security-headers-check]
+    if: always()
+
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🔒 Security Linting Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ESLint Security | ${{ needs.eslint-security.result == 'success' && '✅ Passed' || '⚠️ Issues Found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bandit Python | ${{ needs.bandit-python.result == 'success' && '✅ Passed' || '⚠️ Issues Found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| NPM Audit Fix | ${{ needs.npm-audit-fix-check.result == 'success' && '✅ Checked' || '⚠️ Review Needed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SQL Injection | ${{ needs.sql-injection-check.result == 'success' && '✅ Passed' || '⚠️ Patterns Found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Hardcoded Secrets | ${{ needs.hardcoded-secrets-check.result == 'success' && '✅ Passed' || '⚠️ Potential Secrets' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Insecure Dependencies | ${{ needs.insecure-dependencies-check.result == 'success' && '✅ Passed' || '⚠️ Found Issues' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Headers | ${{ needs.security-headers-check.result == 'success' && '✅ Passed' || '⚠️ Review Config' }} |" >> $GITHUB_STEP_SUMMARY

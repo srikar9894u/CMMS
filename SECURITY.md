@@ -25,7 +25,7 @@ Instead, please report them via one of the following methods:
    - Fill in the details
 
 2. **Email**
-   - Send details to: [Srikar.Tanukula@zabeelfeed.ae]
+   - Send details to: [srikar.989@gmail.com]
    - Include "CMMS Security Vulnerability" in the subject line
 
 ### What to Include
@@ -154,7 +154,7 @@ We recognize and thank security researchers who help us keep CMMS secure:
 ## Contact
 
 For security-related questions or concerns:
-- Email: Srikar.Tanukula@zabeelfeed.ae
+- Email: srikar.989@gmail.com
 - GitHub: [@srikar9894u](https://github.com/srikar9894u)
 
 ---
