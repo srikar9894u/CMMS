@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import db from '../config/database';
 import { authMiddleware, roleMiddleware, AuthRequest } from '../middleware/auth';
+import notificationService from '../services/notification.service';
 
 const router = Router();
 router.use(authMiddleware);
@@ -98,7 +99,23 @@ router.post(
         VALUES (?, ?, ?, ?, ?, 'pending')
       `).run(req.user!.id, start_date, end_date, leave_type, reason || null);
 
-      res.status(201).json({ id: result.lastInsertRowid, message: 'Leave request created successfully' });
+      const leaveRequestId = result.lastInsertRowid;
+
+      // Send notification to managers
+      const leaveRequest = {
+        id: leaveRequestId,
+        user_id: req.user!.id,
+        start_date,
+        end_date,
+        leave_type,
+        reason,
+        status: 'pending',
+      };
+      notificationService.notifyLeaveRequest(leaveRequest).catch(err => {
+        console.error('Failed to send leave request notification:', err);
+      });
+
+      res.status(201).json({ id: leaveRequestId, message: 'Leave request created successfully' });
     } catch (error) {
       console.error('Create leave request error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -123,6 +140,22 @@ router.put('/:id/status', roleMiddleware('admin', 'manager'), (req: AuthRequest,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(status, req.user!.id, notes || null, req.params.id);
+
+    // Get the updated leave request for notification
+    const leaveRequest = db.prepare('SELECT * FROM leave_requests WHERE id = ?').get(req.params.id) as any;
+
+    if (leaveRequest) {
+      const approvedBy = {
+        id: req.user!.id,
+        full_name: req.user!.full_name,
+        username: req.user!.username,
+        email: req.user!.email,
+      };
+      const approved = status === 'approved';
+      notificationService.notifyLeaveApproved(leaveRequest, approved, approvedBy).catch(err => {
+        console.error('Failed to send leave approval notification:', err);
+      });
+    }
 
     res.json({ message: `Leave request ${status} successfully` });
   } catch (error) {

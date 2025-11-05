@@ -9,12 +9,22 @@
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && npm run build",
-    "start": "cd backend && npm start"
+    "start": "cd backend && npm start",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report test-reports/html",
+    "agents:setup": "node scripts/setup-agent-labels.js",
+    "agents:status": "node scripts/agent-status.js",
+    "agents:test": "node scripts/test-agent-workflow.js",
+    "agents:clean": "node -e \"const fs=require('fs');['work-packages','test-scenarios','test-reports','deployment-reports'].forEach(d=>{const p='.agents/'+d;if(fs.existsSync(p))fs.readdirSync(p).forEach(f=>fs.unlinkSync(p+'/'+f))}); console.log('✅ Agent artifacts cleaned')\"",
+    "agents:list": "node -e \"const fs=require('fs');['work-packages','test-scenarios','test-reports','deployment-reports'].forEach(d=>{const p='.agents/'+d;if(fs.existsSync(p))fs.readdirSync(p).filter(f=>f.endsWith('.json')).forEach(f=>{console.log(f);console.log(fs.readFileSync(p+'/'+f,'utf8'))})})\""
   },
   "keywords": ["cmms", "maintenance", "asset-management"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "@playwright/test": "^1.40.0"
   }
 }

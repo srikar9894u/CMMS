@@ -36,6 +36,34 @@ router.get('/', (req: AuthRequest, res: Response) => {
   }
 });
 
+// Get asset statistics
+router.get('/stats', (req: AuthRequest, res: Response) => {
+  try {
+    const totalAssets = db.prepare('SELECT COUNT(*) as count FROM assets').get() as { count: number };
+    const statusCounts = db.prepare(`
+      SELECT
+        COALESCE(SUM(CASE WHEN real_time_status = 'running' THEN 1 ELSE 0 END), 0) as running,
+        COALESCE(SUM(CASE WHEN real_time_status = 'trip' THEN 1 ELSE 0 END), 0) as trip,
+        COALESCE(SUM(CASE WHEN real_time_status = 'stopped' OR real_time_status = 'off' THEN 1 ELSE 0 END), 0) as stopped,
+        COALESCE(SUM(CASE WHEN real_time_status = 'unknown' OR real_time_status IS NULL THEN 1 ELSE 0 END), 0) as unknown,
+        COALESCE(SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END), 0) as down
+      FROM assets
+    `).get() as any;
+
+    res.json({
+      total: totalAssets.count,
+      running: statusCounts.running,
+      trip: statusCounts.trip,
+      stopped: statusCounts.stopped,
+      down: statusCounts.down,
+      unknown: statusCounts.unknown
+    });
+  } catch (error) {
+    console.error('Get asset stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get asset by ID
 router.get('/:id', (req: AuthRequest, res: Response) => {
   try {

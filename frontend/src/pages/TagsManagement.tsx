@@ -40,6 +40,8 @@ const TagsManagement = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [filterConnection, setFilterConnection] = useState('');
   const [filterAsset, setFilterAsset] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -137,6 +139,61 @@ const TagsManagement = () => {
     } catch (error: any) {
       console.error('Failed to create tag:', error);
       alert(error.response?.data?.error || 'Failed to create tag');
+    }
+  };
+
+  const handleEdit = (tag: Tag) => {
+    setEditingTag(tag);
+    setFormData({
+      connection_id: tag.connection_id.toString(),
+      connection_type: tag.connection_type,
+      asset_id: tag.asset_id.toString(),
+      tag_type: tag.tag_type,
+      tag_name: tag.tag_name,
+      tag_address: tag.tag_address,
+      data_type: tag.data_type,
+      invert_logic: tag.invert_logic,
+      description: tag.description || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingTag) return;
+
+    try {
+      const endpoint = editingTag.connection_type === 'opc' ? '/api/opc/tags' : '/api/s7/tags';
+      const payload = {
+        tag_type: formData.tag_type,
+        tag_name: formData.tag_name,
+        tag_address: formData.tag_address,
+        data_type: formData.data_type,
+        invert_logic: formData.invert_logic,
+        description: formData.description
+      };
+
+      await axios.put(`http://localhost:3000${endpoint}/${editingTag.id}`, payload);
+
+      alert('Tag updated successfully!');
+      setShowEditModal(false);
+      setEditingTag(null);
+      setFormData({
+        connection_id: '',
+        connection_type: 'opc',
+        asset_id: '',
+        tag_type: 'running',
+        tag_name: '',
+        tag_address: '',
+        data_type: 'boolean',
+        invert_logic: false,
+        description: ''
+      });
+      fetchData();
+    } catch (error: any) {
+      console.error('Failed to update tag:', error);
+      alert(error.response?.data?.error || 'Failed to update tag');
     }
   };
 
@@ -328,14 +385,26 @@ const TagsManagement = () => {
                             </span>
                           )}
                         </div>
-                        <button
-                          onClick={() => handleDelete(tag)}
-                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                        >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(tag)}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                            title="Edit tag"
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(tag)}
+                            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                            title="Delete tag"
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
 
                       <div className="space-y-1">
@@ -367,6 +436,132 @@ const TagsManagement = () => {
           ))
         )}
       </div>
+
+      {/* Edit Tag Modal */}
+      <Modal isOpen={showEditModal} onClose={() => { setShowEditModal(false); setEditingTag(null); }} title="Edit Tag">
+        <form onSubmit={handleUpdate} className="space-y-4">
+          {/* Connection Info - Read-only */}
+          <div className={`${themeColors.colors.secondary} p-3 rounded-lg`}>
+            <div className="space-y-1">
+              <div>
+                <span className={`text-xs ${themeColors.colors.textMuted}`}>Connection: </span>
+                <span className={`text-sm font-medium ${themeColors.colors.textPrimary}`}>{editingTag?.connection_name}</span>
+              </div>
+              <div>
+                <span className={`text-xs ${themeColors.colors.textMuted}`}>Asset: </span>
+                <span className={`text-sm font-medium ${themeColors.colors.textPrimary}`}>{editingTag?.asset_name}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>
+                Tag Type *
+              </label>
+              <select
+                value={formData.tag_type}
+                onChange={(e) => setFormData({ ...formData, tag_type: e.target.value })}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                required
+              >
+                <option value="running">Running Status</option>
+                <option value="trip">Trip/Fault Status</option>
+                <option value="off">Off/Stopped Status</option>
+                <option value="custom">Custom Tag</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>
+                Tag Name *
+              </label>
+              <input
+                type="text"
+                value={formData.tag_name}
+                onChange={(e) => setFormData({ ...formData, tag_name: e.target.value })}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+                placeholder="Motor_Running"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>
+              Tag Address *
+            </label>
+            <input
+              type="text"
+              value={formData.tag_address}
+              onChange={(e) => setFormData({ ...formData, tag_address: e.target.value })}
+              className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              placeholder={formData.connection_type === 'opc' ? 'ns=3;s="DB1"."Running"' : 'DB1.DBX0.0'}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>
+                Data Type
+              </label>
+              <select
+                value={formData.data_type}
+                onChange={(e) => setFormData({ ...formData, data_type: e.target.value })}
+                className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              >
+                <option value="boolean">Boolean</option>
+                <option value="integer">Integer</option>
+                <option value="float">Float</option>
+                <option value="string">String</option>
+              </select>
+            </div>
+
+            <div className="flex items-center pt-8">
+              <input
+                type="checkbox"
+                id="edit_invert_logic"
+                checked={formData.invert_logic}
+                onChange={(e) => setFormData({ ...formData, invert_logic: e.target.checked })}
+                className="mr-2 w-4 h-4"
+              />
+              <label htmlFor="edit_invert_logic" className={`text-sm ${themeColors.colors.textSecondary}`}>
+                Invert Logic (0=ON, 1=OFF)
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${themeColors.colors.textSecondary} mb-2`}>
+              Description
+            </label>
+            <input
+              type="text"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className={`w-full px-3 py-2 rounded-lg border ${themeColors.colors.input}`}
+              placeholder="Main motor running status"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={() => { setShowEditModal(false); setEditingTag(null); }}
+              className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} px-4 py-2 rounded-lg font-medium transition-colors`}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-2 rounded-lg font-medium transition-colors`}
+            >
+              Update Tag
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Add Tag Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Tag">

@@ -26,6 +26,7 @@ import DocumentLibrary from './pages/DocumentLibrary';
 import TripFeedback from './pages/TripFeedback';
 import TagsManagement from './pages/TagsManagement';
 import PLCConfiguration from './pages/PLCConfiguration';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
                 <Route path="system-health" element={<SystemHealth />} />
                 <Route path="admin-logs" element={<AdminLogs />} />
                 <Route path="system-settings" element={<SystemSettings />} />
+                <Route path="notifications" element={<Notifications />} />
                 <Route path="trip-feedback" element={<TripFeedback />} />
               </Route>
             </Routes>

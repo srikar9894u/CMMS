@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import db from '../config/database';
 import { authMiddleware, roleMiddleware, AuthRequest } from '../middleware/auth';
+import notificationService from '../services/notification.service';
 
 const router = Router();
 router.use(authMiddleware);
@@ -125,6 +126,15 @@ router.put('/:id', roleMiddleware('admin', 'manager'), (req: AuthRequest, res: R
     values.push(req.params.id);
 
     db.prepare(`UPDATE inventory SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+
+    // Check if inventory is now low and send notification
+    const item = db.prepare('SELECT * FROM inventory WHERE id = ?').get(req.params.id) as any;
+    if (item && item.quantity <= item.min_quantity) {
+      notificationService.notifyInventoryLow(item).catch(err => {
+        console.error('Failed to send low inventory notification:', err);
+      });
+    }
+
     res.json({ message: 'Inventory item updated successfully' });
   } catch (error) {
     console.error('Update inventory item error:', error);
@@ -170,6 +180,14 @@ router.post('/:id/adjust', roleMiddleware('admin', 'manager', 'technician'), (re
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(newQuantity, req.params.id);
+
+    // Check if inventory is now low and send notification
+    const updatedItem = db.prepare('SELECT * FROM inventory WHERE id = ?').get(req.params.id) as any;
+    if (updatedItem && updatedItem.quantity <= updatedItem.min_quantity) {
+      notificationService.notifyInventoryLow(updatedItem).catch(err => {
+        console.error('Failed to send low inventory notification:', err);
+      });
+    }
 
     res.json({ message: 'Inventory adjusted successfully', new_quantity: newQuantity });
   } catch (error) {

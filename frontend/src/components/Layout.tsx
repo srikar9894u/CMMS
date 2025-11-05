@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import ThemeSwitcher from './ThemeSwitcher';
 import axios from 'axios';
+import { RESPONSIVE_PADDING, TOUCH_TARGET } from '../utils/responsive';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -49,6 +50,7 @@ const Layout = () => {
     { name: 'Document Library', path: '/documents', icon: '📚' },
     { name: 'Reports', path: '/reports', icon: '📈' },
     { name: 'Leave Management', path: '/leave', icon: '🏖️' },
+    { name: 'Notifications', path: '/notifications', icon: '🔔' },
     { name: 'Real-Time Status', path: '/real-time-status', icon: '🔴' },
   ];
 
@@ -76,14 +78,18 @@ const Layout = () => {
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              {/* Mobile menu button */}
+              {/* Mobile menu button - Touch-friendly */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`md:hidden p-2 rounded-lg ${themeColors.colors.secondary} ${themeColors.colors.secondaryHover}`}
+                className={`md:hidden ${TOUCH_TARGET.medium} flex items-center justify-center rounded-lg ${themeColors.colors.secondary} ${themeColors.colors.secondaryHover}`}
                 aria-label="Toggle menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  {isSidebarOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
                 </svg>
               </button>
 
@@ -109,7 +115,7 @@ const Layout = () => {
               <ThemeSwitcher />
               <button
                 onClick={logout}
-                className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} ${themeColors.colors.textSecondary} px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors`}
+                className={`${themeColors.colors.secondary} ${themeColors.colors.secondaryHover} ${themeColors.colors.textSecondary} px-4 ${TOUCH_TARGET.medium} rounded-lg text-xs sm:text-sm font-medium transition-colors`}
               >
                 Logout
               </button>
@@ -144,7 +150,7 @@ const Layout = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={`flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 px-3 sm:px-4 ${TOUCH_TARGET.medium} rounded-lg transition-colors ${
                     isActive
                       ? `${themeColors.colors.navActive} ${themeColors.colors.navActiveText} font-medium`
                       : `${themeColors.colors.navText} ${themeColors.colors.navHover}`
@@ -159,7 +165,7 @@ const Layout = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full md:w-auto">
+        <main className={`flex-1 ${RESPONSIVE_PADDING.page} w-full md:w-auto`}>
           <Outlet />
         </main>
       </div>

@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import db from '../config/database';
 import { authMiddleware, roleMiddleware, AuthRequest } from '../middleware/auth';
+import notificationService from '../services/notification.service';
 
 const router = Router();
 router.use(authMiddleware);
@@ -117,7 +118,28 @@ router.post(
         notes || null
       );
 
-      res.status(201).json({ id: result.lastInsertRowid, message: 'Work order created successfully' });
+      const workOrderId = result.lastInsertRowid;
+
+      // Send notification if work order is assigned
+      if (assigned_to) {
+        const workOrder = {
+          id: workOrderId,
+          title,
+          description,
+          asset_id,
+          priority,
+          status: status || 'open',
+          work_type,
+          assigned_to,
+          estimated_hours,
+          scheduled_date,
+        };
+        notificationService.notifyWorkOrderAssigned(workOrder).catch(err => {
+          console.error('Failed to send work order assignment notification:', err);
+        });
+      }
+
+      res.status(201).json({ id: workOrderId, message: 'Work order created successfully' });
     } catch (error) {
       console.error('Create work order error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -128,6 +150,13 @@ router.post(
 // Update work order
 router.put('/:id', roleMiddleware('admin', 'manager', 'technician'), (req: AuthRequest, res: Response) => {
   try {
+    // Get the current work order before updating
+    const oldWorkOrder = db.prepare('SELECT * FROM work_orders WHERE id = ?').get(req.params.id) as any;
+
+    if (!oldWorkOrder) {
+      return res.status(404).json({ error: 'Work order not found' });
+    }
+
     const updates: string[] = [];
     const values: any[] = [];
 
@@ -152,6 +181,30 @@ router.put('/:id', roleMiddleware('admin', 'manager', 'technician'), (req: AuthR
     values.push(req.params.id);
 
     db.prepare(`UPDATE work_orders SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+
+    // Get updated work order for notifications
+    const updatedWorkOrder = db.prepare('SELECT * FROM work_orders WHERE id = ?').get(req.params.id) as any;
+
+    // Check if assignment changed and send notification
+    if (req.body.assigned_to !== undefined && req.body.assigned_to !== oldWorkOrder.assigned_to && req.body.assigned_to) {
+      notificationService.notifyWorkOrderAssigned(updatedWorkOrder).catch(err => {
+        console.error('Failed to send work order assignment notification:', err);
+      });
+    }
+
+    // Check if work order was completed and send notification
+    if (req.body.status === 'completed' && oldWorkOrder.status !== 'completed') {
+      const completedBy = {
+        id: req.user!.id,
+        full_name: req.user!.full_name,
+        username: req.user!.username,
+        email: req.user!.email,
+      };
+      notificationService.notifyWorkOrderCompleted(updatedWorkOrder, completedBy).catch(err => {
+        console.error('Failed to send work order completion notification:', err);
+      });
+    }
+
     res.json({ message: 'Work order updated successfully' });
   } catch (error) {
     console.error('Update work order error:', error);

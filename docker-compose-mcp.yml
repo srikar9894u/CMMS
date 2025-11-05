@@ -1,0 +1,220 @@
+# MCP (Model Context Protocol) Servers for CMMS Project
+# Run with: docker-compose -f docker-compose-mcp.yml up -d
+
+version: '3.8'
+
+services:
+  # ============================================
+  # DATABASE MCP SERVERS
+  # ============================================
+
+  mcp-sqlite:
+    image: mcp/sqlite
+    container_name: cmms-mcp-sqlite
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./data:/data:ro  # Read-only access to database
+    environment:
+      - SQLITE_DB_PATH=/data/database.sqlite
+      - MCP_PORT=8080
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=sqlite"
+      - "mcp.purpose=Database inspection and queries"
+
+  mcp-postgres:
+    image: mcp/postgres
+    container_name: cmms-mcp-postgres
+    ports:
+      - "8082:8080"
+    environment:
+      - DATABASE_URL=postgresql://cmms_user:cmms_password@localhost:5432/cmms
+      - MCP_PORT=8080
+      - READ_ONLY=true  # Safety: read-only by default
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=postgres"
+      - "mcp.purpose=PostgreSQL database operations"
+
+  # ============================================
+  # FILESYSTEM & VERSION CONTROL
+  # ============================================
+
+  mcp-filesystem:
+    image: mcp/filesystem
+    container_name: cmms-mcp-filesystem
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./:/workspace:ro  # Read-only access to entire project
+      - ./data:/data  # Read-write for data directory
+      - ./logs:/logs  # Read-write for logs
+    environment:
+      - ALLOWED_PATHS=/workspace,/data,/logs
+      - MCP_PORT=8080
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=filesystem"
+      - "mcp.purpose=File operations and code access"
+
+  mcp-git:
+    image: mcp/git
+    container_name: cmms-mcp-git
+    ports:
+      - "8084:8080"
+    volumes:
+      - ./:/repo:ro  # Read-only access to git repository
+    environment:
+      - GIT_REPO_PATH=/repo
+      - MCP_PORT=8080
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=git"
+      - "mcp.purpose=Git operations and history"
+
+  # ============================================
+  # TESTING & AUTOMATION
+  # ============================================
+
+  mcp-playwright:
+    image: mcr.microsoft.com/playwright:latest
+    container_name: cmms-mcp-playwright
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./tests:/tests
+      - ./test-reports:/reports
+      - ./playwright-screenshots:/screenshots
+    environment:
+      - HEADLESS=true
+      - BROWSER=chromium
+      - BASE_URL=http://cmms-frontend
+      - MCP_PORT=8080
+    networks:
+      - mcp-network
+      - cmms-network  # Connect to CMMS network for testing
+    restart: unless-stopped
+    labels:
+      - "mcp.server=playwright"
+      - "mcp.purpose=E2E testing and browser automation"
+
+  # ============================================
+  # WEB & API
+  # ============================================
+
+  mcp-fetch:
+    image: mcp/fetch
+    container_name: cmms-mcp-fetch
+    ports:
+      - "8086:8080"
+    environment:
+      - MCP_PORT=8080
+      - TIMEOUT=30000
+      - MAX_REDIRECTS=5
+    networks:
+      - mcp-network
+      - cmms-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=fetch"
+      - "mcp.purpose=Web content fetching and API testing"
+
+  # ============================================
+  # UTILITY & MEMORY
+  # ============================================
+
+  mcp-memory:
+    image: mcp/memory
+    container_name: cmms-mcp-memory
+    ports:
+      - "8087:8080"
+    volumes:
+      - mcp-memory-data:/data
+    environment:
+      - MCP_PORT=8080
+      - MEMORY_STORAGE=/data/memory.json
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=memory"
+      - "mcp.purpose=Persistent context and knowledge graph"
+
+  mcp-time:
+    image: mcp/time
+    container_name: cmms-mcp-time
+    ports:
+      - "8088:8080"
+    environment:
+      - MCP_PORT=8080
+      - DEFAULT_TIMEZONE=UTC
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=time"
+      - "mcp.purpose=Time and timezone conversions"
+
+  # ============================================
+  # DEVELOPMENT TOOLS
+  # ============================================
+
+  mcp-everything:
+    image: mcp/everything
+    container_name: cmms-mcp-everything
+    ports:
+      - "8089:8080"
+    environment:
+      - MCP_PORT=8080
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    labels:
+      - "mcp.server=everything"
+      - "mcp.purpose=Reference server with all MCP features"
+
+  # ============================================
+  # MCP GATEWAY/PROXY (Optional)
+  # ============================================
+
+  mcp-gateway:
+    image: nginx:alpine
+    container_name: cmms-mcp-gateway
+    ports:
+      - "8080:80"
+    volumes:
+      - ./mcp-config/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - mcp-network
+    depends_on:
+      - mcp-sqlite
+      - mcp-filesystem
+      - mcp-git
+      - mcp-fetch
+      - mcp-memory
+    restart: unless-stopped
+    labels:
+      - "mcp.server=gateway"
+      - "mcp.purpose=Unified gateway for all MCP servers"
+
+networks:
+  mcp-network:
+    driver: bridge
+    labels:
+      - "mcp.network=true"
+  cmms-network:
+    external: true  # Use existing CMMS network
+
+volumes:
+  mcp-memory-data:
+    labels:
+      - "mcp.volume=memory"

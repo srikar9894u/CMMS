@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from '../components/Modal';
+import ResponsiveTable from '../components/ResponsiveTable';
 import { useTheme } from '../context/ThemeContext';
+import { RESPONSIVE_TEXT, TOUCH_TARGET } from '../utils/responsive';
 
 interface WorkOrder {
   id: number;
@@ -216,8 +218,8 @@ const WorkOrders = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-        <h1 className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>Work Orders</h1>
-        <button onClick={openAddModal} className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-2 rounded-lg font-medium transition-colors`}>
+        <h1 className={`${RESPONSIVE_TEXT.h2} font-bold ${themeColors.colors.textPrimary}`}>Work Orders</h1>
+        <button onClick={openAddModal} className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 ${TOUCH_TARGET.medium} rounded-lg font-medium transition-colors ${RESPONSIVE_TEXT.body}`}>
           + New Work Order
         </button>
       </div>
@@ -272,83 +274,100 @@ const WorkOrders = () => {
 
       {/* Work Orders Table */}
       <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm overflow-hidden`}>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y">
-            <thead className={`${themeColors.colors.secondary}`}>
-              <tr>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Title</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden md:table-cell`}>Asset</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Priority</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Status</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden lg:table-cell`}>Assigned To</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Actions</th>
-              </tr>
-            </thead>
-            <tbody className={`${themeColors.colors.card} divide-y ${themeColors.colors.borderLight}`}>
-              {workOrders.map((wo) => (
-                <tr key={wo.id} className={themeColors.colors.cardHover}>
-                  <td className={`px-4 sm:px-6 py-4 text-sm font-medium ${themeColors.colors.textPrimary}`}>
-                    <div className="max-w-xs truncate">{wo.title}</div>
-                  </td>
-                  <td className={`px-4 sm:px-6 py-4 text-sm ${themeColors.colors.textMuted} hidden md:table-cell`}>
-                    {wo.asset_name || '-'}
-                  </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${priorityColors[wo.priority]}`}>
-                      {wo.priority}
-                    </span>
-                  </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[wo.status]}`}>
-                      {wo.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className={`px-4 sm:px-6 py-4 text-sm ${themeColors.colors.textMuted} hidden lg:table-cell`}>
-                    {wo.assigned_to_name || 'Unassigned'}
-                  </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                    {deleteConfirm === wo.id ? (
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleDelete(wo.id)}
-                          className={`${themeColors.colors.errorText} font-medium`}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(null)}
-                          className={themeColors.colors.textMuted}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <button
-                          onClick={() => handleEdit(wo)}
-                          className={themeColors.colors.primaryText}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(wo.id)}
-                          className={themeColors.colors.errorText}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {workOrders.length === 0 && (
-          <div className={`text-center py-12 ${themeColors.colors.textMuted}`}>
-            No work orders found. Click "New Work Order" to create one.
-          </div>
-        )}
+        <ResponsiveTable
+          columns={[
+            {
+              key: 'title',
+              label: 'Title',
+              render: (value: string) => (
+                <div className="max-w-xs truncate">{value}</div>
+              )
+            },
+            {
+              key: 'asset_name',
+              label: 'Asset',
+              hideOnMobile: true,
+              render: (value: string) => value || '-'
+            },
+            {
+              key: 'priority',
+              label: 'Priority',
+              render: (value: string) => (
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${priorityColors[value]}`}>
+                  {value}
+                </span>
+              ),
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              render: (value: string) => (
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[value]}`}>
+                  {value.replace('_', ' ')}
+                </span>
+              ),
+            },
+            {
+              key: 'assigned_to_name',
+              label: 'Assigned To',
+              hideOnMobile: true,
+              hideOnTablet: true,
+              render: (value: string) => value || 'Unassigned'
+            },
+            {
+              key: 'actions',
+              label: 'Actions',
+              render: (_, wo: WorkOrder) => (
+                deleteConfirm === wo.id ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(wo.id);
+                      }}
+                      className={`${themeColors.colors.errorText} font-medium ${TOUCH_TARGET.small} px-3`}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm(null);
+                      }}
+                      className={`${themeColors.colors.textMuted} ${TOUCH_TARGET.small} px-3`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(wo);
+                      }}
+                      className={`${themeColors.colors.primaryText} ${TOUCH_TARGET.small} px-3`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm(wo.id);
+                      }}
+                      className={`${themeColors.colors.errorText} ${TOUCH_TARGET.small} px-3`}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )
+              ),
+            },
+          ]}
+          data={workOrders}
+          keyField="id"
+          emptyMessage="No work orders found. Click 'New Work Order' to create one."
+        />
       </div>
 
       {/* Add/Edit Work Order Modal */}

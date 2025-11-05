@@ -22,9 +22,12 @@ import uploadsRoutes from './routes/uploads.routes';
 import documentsRoutes from './routes/documents.routes';
 import tripFeedbackRoutes from './routes/trip-feedback.routes';
 import pmSchedulerRoutes from './routes/pm-scheduler.routes';
+import notificationsRoutes from './routes/notifications.routes';
+import attachmentsRoutes from './routes/attachments.routes';
 
 // Import services
 import { PMSchedulerService } from './services/pm-scheduler.service';
+import pmReminderSchedulerService from './services/pm-reminder-scheduler.service';
 
 // Load environment variables
 dotenv.config();
@@ -86,6 +89,8 @@ app.use('/api/uploads', uploadsRoutes);
 app.use('/api/documents', documentsRoutes);
 app.use('/api/trip-feedback', tripFeedbackRoutes);
 app.use('/api/pm-scheduler', pmSchedulerRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/attachments', attachmentsRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -103,6 +108,10 @@ app.listen(PORT, () => {
   // Start PM Scheduler
   PMSchedulerService.startScheduler();
   console.log('PM Auto-Scheduler initialized');
+
+  // Start PM Reminder Scheduler
+  pmReminderSchedulerService.startScheduler();
+  console.log('PM Reminder Scheduler initialized');
 });
 
 export default app;

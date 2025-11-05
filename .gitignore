@@ -9,3 +9,7 @@ build/
 coverage/
 .vscode/
 .idea/
+
+# Multi-Agent CI/CD artifacts (keep directory structure, ignore JSON files)
+.agents/**/*.json
+!.agents/README.md

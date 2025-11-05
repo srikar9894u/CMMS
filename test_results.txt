@@ -1,0 +1,1179 @@
+
+> cmms-system@1.0.0 test
+> playwright test
+
+
+Running 120 tests using 4 workers
+
+  ok   2 [chromium] › tests\api\assets.api.spec.ts:26:7 › Assets API › GET /api/assets - should return list of assets (112ms)
+  ok   5 [chromium] › tests\api\assets.api.spec.ts:44:7 › Assets API › GET /api/assets/:id - should return single asset (99ms)
+  ok   3 [chromium] › tests\api\assets.api.spec.ts:101:7 › Assets API › PUT /api/assets/:id - should update asset (137ms)
+  ok   4 [chromium] › tests\api\assets.api.spec.ts:58:7 › Assets API › GET /api/assets/stats - should return asset statistics (44ms)
+  ok   7 [chromium] › tests\api\assets.api.spec.ts:119:7 › Assets API › GET /api/assets - should handle unauthorized request (16ms)
+  ok   8 [chromium] › tests\api\assets.api.spec.ts:74:7 › Assets API › POST /api/assets - should create new asset (20ms)
+  x    6 [chromium] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors (2.3s)
+  ok   9 [chromium] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page (2.9s)
+  ok  10 [chromium] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page (3.0s)
+  ok   1 [chromium] › tests\e2e\dashboard.spec.ts:20:7 › CMMS Dashboard › should display dashboard statistics (3.0s)
+  ok  13 [chromium] › tests\e2e\login.spec.ts:15:7 › CMMS Login › should display login page (876ms)
+  ok  12 [chromium] › tests\e2e\dashboard.spec.ts:83:7 › CMMS Dashboard › should display gradient text on headings (1.8s)
+  ok  11 [chromium] › tests\e2e\dashboard.spec.ts:68:7 › CMMS Dashboard › should handle theme toggle (2.6s)
+  ok  14 [chromium] › tests\e2e\login.spec.ts:22:7 › CMMS Login › should login with valid credentials (1.7s)
+  ok  15 [chromium] › tests\e2e\login.spec.ts:38:7 › CMMS Login › should show error with invalid credentials (972ms)
+  ok  16 [chromium] › tests\e2e\login.spec.ts:50:7 › CMMS Login › should not allow empty credentials (921ms)
+  ok  19 [chromium] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal (1.7s)
+  ok  17 [chromium] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list (2.0s)
+  ok  18 [chromium] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status (2.1s)
+  ok  21 [chromium] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities (1.5s)
+Found 1 AUTO-TRIP work orders
+  ok  22 [chromium] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders (1.5s)
+  ok  20 [chromium] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status (2.9s)
+  ok  23 [chromium] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment (1.5s)
+  ok  24 [chromium] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully (1.7s)
+  ok  25 [firefox] › tests\api\assets.api.spec.ts:58:7 › Assets API › GET /api/assets/stats - should return asset statistics (148ms)
+  ok  28 [firefox] › tests\api\assets.api.spec.ts:74:7 › Assets API › POST /api/assets - should create new asset (146ms)
+  ok  26 [firefox] › tests\api\assets.api.spec.ts:26:7 › Assets API › GET /api/assets - should return list of assets (162ms)
+  ok  30 [firefox] › tests\api\assets.api.spec.ts:44:7 › Assets API › GET /api/assets/:id - should return single asset (55ms)
+  ok  27 [firefox] › tests\api\assets.api.spec.ts:101:7 › Assets API › PUT /api/assets/:id - should update asset (84ms)
+  ok  32 [firefox] › tests\api\assets.api.spec.ts:119:7 › Assets API › GET /api/assets - should handle unauthorized request (37ms)
+  ok  34 [firefox] › tests\e2e\dashboard.spec.ts:20:7 › CMMS Dashboard › should display dashboard statistics (14.5s)
+  ok  31 [firefox] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page (16.8s)
+  ok  33 [firefox] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page (14.2s)
+  ok  35 [firefox] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status (6.1s)
+  ok  37 [firefox] › tests\e2e\dashboard.spec.ts:83:7 › CMMS Dashboard › should display gradient text on headings (4.5s)
+  ok  36 [firefox] › tests\e2e\dashboard.spec.ts:68:7 › CMMS Dashboard › should handle theme toggle (7.1s)
+  ok  38 [firefox] › tests\e2e\login.spec.ts:15:7 › CMMS Login › should display login page (2.7s)
+  x   29 [firefox] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors (15.2s)
+  ok  41 [firefox] › tests\e2e\login.spec.ts:50:7 › CMMS Login › should not allow empty credentials (2.5s)
+  ok  40 [firefox] › tests\e2e\login.spec.ts:38:7 › CMMS Login › should show error with invalid credentials (4.0s)
+  ok  39 [firefox] › tests\e2e\login.spec.ts:22:7 › CMMS Login › should login with valid credentials (4.5s)
+  ok  43 [firefox] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status (4.8s)
+  ok  44 [firefox] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities (5.0s)
+  ok  42 [firefox] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal (6.0s)
+Found 0 AUTO-TRIP work orders
+  ok  45 [firefox] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders (5.9s)
+  ok  48 [firefox] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully (5.6s)
+  ok  46 [firefox] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment (7.3s)
+  ok  47 [firefox] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list (9.6s)
+  ok  49 [webkit] › tests\api\assets.api.spec.ts:58:7 › Assets API › GET /api/assets/stats - should return asset statistics (214ms)
+  ok  50 [webkit] › tests\api\assets.api.spec.ts:101:7 › Assets API › PUT /api/assets/:id - should update asset (225ms)
+  ok  52 [webkit] › tests\api\assets.api.spec.ts:74:7 › Assets API › POST /api/assets - should create new asset (231ms)
+  ok  53 [webkit] › tests\api\assets.api.spec.ts:119:7 › Assets API › GET /api/assets - should handle unauthorized request (39ms)
+  ok  51 [webkit] › tests\api\assets.api.spec.ts:26:7 › Assets API › GET /api/assets - should return list of assets (72ms)
+  ok  55 [webkit] › tests\api\assets.api.spec.ts:44:7 › Assets API › GET /api/assets/:id - should return single asset (76ms)
+  x   54 [webkit] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors (4.1s)
+  ok  57 [webkit] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page (5.5s)
+  ok  58 [webkit] › tests\e2e\dashboard.spec.ts:20:7 › CMMS Dashboard › should display dashboard statistics (3.6s)
+  ok  56 [webkit] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page (6.1s)
+  ok  61 [webkit] › tests\e2e\login.spec.ts:15:7 › CMMS Login › should display login page (2.0s)
+  ok  60 [webkit] › tests\e2e\dashboard.spec.ts:83:7 › CMMS Dashboard › should display gradient text on headings (3.4s)
+  ok  63 [webkit] › tests\e2e\login.spec.ts:22:7 › CMMS Login › should login with valid credentials (3.7s)
+  ok  59 [webkit] › tests\e2e\dashboard.spec.ts:68:7 › CMMS Dashboard › should handle theme toggle (6.4s)
+  ok  64 [webkit] › tests\e2e\login.spec.ts:38:7 › CMMS Login › should show error with invalid credentials (2.7s)
+  ok  62 [webkit] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status (5.2s)
+  ok  65 [webkit] › tests\e2e\login.spec.ts:50:7 › CMMS Login › should not allow empty credentials (2.5s)
+  ok  67 [webkit] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal (4.3s)
+  ok  66 [webkit] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list (5.1s)
+  ok  68 [webkit] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status (4.4s)
+  ok  69 [webkit] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities (4.4s)
+Found 1 AUTO-TRIP work orders
+  ok  70 [webkit] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders (4.2s)
+  ok  71 [webkit] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment (4.4s)
+  ok  72 [webkit] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully (4.8s)
+  ok  73 [Mobile Chrome] › tests\api\assets.api.spec.ts:26:7 › Assets API › GET /api/assets - should return list of assets (77ms)
+  ok  74 [Mobile Chrome] › tests\api\assets.api.spec.ts:44:7 › Assets API › GET /api/assets/:id - should return single asset (51ms)
+  ok  76 [Mobile Chrome] › tests\api\assets.api.spec.ts:58:7 › Assets API › GET /api/assets/stats - should return asset statistics (59ms)
+  ok  77 [Mobile Chrome] › tests\api\assets.api.spec.ts:74:7 › Assets API › POST /api/assets - should create new asset (236ms)
+  ok  78 [Mobile Chrome] › tests\api\assets.api.spec.ts:101:7 › Assets API › PUT /api/assets/:id - should update asset (221ms)
+  ok  80 [Mobile Chrome] › tests\api\assets.api.spec.ts:119:7 › Assets API › GET /api/assets - should handle unauthorized request (35ms)
+  ok  82 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:20:7 › CMMS Dashboard › should display dashboard statistics (4.0s)
+  x   75 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors (2.8s)
+  ok  84 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:68:7 › CMMS Dashboard › should handle theme toggle (5.7s)
+  x   79 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page (13.0s)
+  x   81 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page (13.1s)
+  ok  85 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:83:7 › CMMS Dashboard › should display gradient text on headings (2.2s)
+  x   83 [Mobile Chrome] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status (12.0s)
+  ok  86 [Mobile Chrome] › tests\e2e\login.spec.ts:38:7 › CMMS Login › should show error with invalid credentials (1.4s)
+  ok  88 [Mobile Chrome] › tests\e2e\login.spec.ts:15:7 › CMMS Login › should display login page (1.7s)
+  ok  89 [Mobile Chrome] › tests\e2e\login.spec.ts:22:7 › CMMS Login › should login with valid credentials (3.0s)
+  ok  91 [Mobile Chrome] › tests\e2e\login.spec.ts:50:7 › CMMS Login › should not allow empty credentials (1.8s)
+  x   87 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list (12.4s)
+  x   92 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status (11.9s)
+  x   90 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal (13.9s)
+  x   93 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities (12.1s)
+  ok  97 [Mobile Safari] › tests\api\assets.api.spec.ts:26:7 › Assets API › GET /api/assets - should return list of assets (129ms)
+  ok  98 [Mobile Safari] › tests\api\assets.api.spec.ts:44:7 › Assets API › GET /api/assets/:id - should return single asset (64ms)
+  ok  99 [Mobile Safari] › tests\api\assets.api.spec.ts:58:7 › Assets API › GET /api/assets/stats - should return asset statistics (107ms)
+  ok 100 [Mobile Safari] › tests\api\assets.api.spec.ts:74:7 › Assets API › POST /api/assets - should create new asset (36ms)
+  ok 101 [Mobile Safari] › tests\api\assets.api.spec.ts:101:7 › Assets API › PUT /api/assets/:id - should update asset (84ms)
+  ok 102 [Mobile Safari] › tests\api\assets.api.spec.ts:119:7 › Assets API › GET /api/assets - should handle unauthorized request (44ms)
+  x   94 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders (11.6s)
+  ok 103 [Mobile Safari] › tests\e2e\dashboard.spec.ts:20:7 › CMMS Dashboard › should display dashboard statistics (3.4s)
+  x  105 [Mobile Safari] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors (2.3s)
+  x   95 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment (11.9s)
+  x   96 [Mobile Chrome] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully (12.0s)
+  x  104 [Mobile Safari] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page (12.0s)
+  ok 108 [Mobile Safari] › tests\e2e\dashboard.spec.ts:68:7 › CMMS Dashboard › should handle theme toggle (5.9s)
+  ok 109 [Mobile Safari] › tests\e2e\login.spec.ts:15:7 › CMMS Login › should display login page (2.1s)
+  ok 110 [Mobile Safari] › tests\e2e\dashboard.spec.ts:83:7 › CMMS Dashboard › should display gradient text on headings (3.6s)
+  ok 111 [Mobile Safari] › tests\e2e\login.spec.ts:22:7 › CMMS Login › should login with valid credentials (3.5s)
+  x  106 [Mobile Safari] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page (13.3s)
+  ok 112 [Mobile Safari] › tests\e2e\login.spec.ts:38:7 › CMMS Login › should show error with invalid credentials (2.7s)
+  ok 113 [Mobile Safari] › tests\e2e\login.spec.ts:50:7 › CMMS Login › should not allow empty credentials (2.3s)
+  x  107 [Mobile Safari] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status (13.8s)
+  x  114 [Mobile Safari] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal (13.0s)
+  x  115 [Mobile Safari] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status (12.8s)
+  x  116 [Mobile Safari] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list (12.7s)
+  x  117 [Mobile Safari] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities (12.7s)
+  x  118 [Mobile Safari] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders (12.6s)
+  x  119 [Mobile Safari] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment (12.6s)
+  x  120 [Mobile Safari] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully (12.1s)
+
+
+  1) [chromium] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      36 |
+      37 |     // Should have at least one status badge visible
+    > 38 |     expect(badgeCount).toBeGreaterThan(0);
+         |                        ^
+      39 |   });
+      40 |
+      41 |   test('should navigate to assets page', async ({ page }) => {
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:38:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-chromium\error-context.md
+
+  2) [firefox] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      36 |
+      37 |     // Should have at least one status badge visible
+    > 38 |     expect(badgeCount).toBeGreaterThan(0);
+         |                        ^
+      39 |   });
+      40 |
+      41 |   test('should navigate to assets page', async ({ page }) => {
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:38:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-firefox\error-context.md
+
+  3) [webkit] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      36 |
+      37 |     // Should have at least one status badge visible
+    > 38 |     expect(badgeCount).toBeGreaterThan(0);
+         |                        ^
+      39 |   });
+      40 |
+      41 |   test('should navigate to assets page', async ({ page }) => {
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:38:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-webkit\error-context.md
+
+  4) [Mobile Chrome] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      36 |
+      37 |     // Should have at least one status badge visible
+    > 38 |     expect(badgeCount).toBeGreaterThan(0);
+         |                        ^
+      39 |   });
+      40 |
+      41 |   test('should navigate to assets page', async ({ page }) => {
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:38:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-Mobile-Chrome\error-context.md
+
+  5) [Mobile Chrome] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: /Assets/i })[22m
+    [2m    - locator resolved to <a href="/assets" class="flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-50">…</a>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    16 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      41 |   test('should navigate to assets page', async ({ page }) => {
+      42 |     // Find and click link to assets - use getByRole which is more mobile-friendly
+    > 43 |     await page.getByRole('link', { name: /Assets/i }).click();
+         |                                                       ^
+      44 |
+      45 |     // Verify navigation
+      46 |     await page.waitForURL('**/assets');
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:43:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-navigate-to-assets-page-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-navigate-to-assets-page-Mobile-Chrome\error-context.md
+
+  6) [Mobile Chrome] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: /Work Orders/i })[22m
+    [2m    - locator resolved to <a href="/work-orders" class="flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-50">…</a>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    15 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+    [2m    - element is visible, enabled and stable[22m
+    [2m    - scrolling into view if needed[22m
+
+
+      50 |   test('should navigate to work orders page', async ({ page }) => {
+      51 |     // Find and click link to work orders - use getByRole which is more mobile-friendly
+    > 52 |     await page.getByRole('link', { name: /Work Orders/i }).click();
+         |                                                            ^
+      53 |
+      54 |     // Verify navigation
+      55 |     await page.waitForURL('**/work-orders');
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:52:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-d7464-avigate-to-work-orders-page-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-d7464-avigate-to-work-orders-page-Mobile-Chrome\error-context.md
+
+  7) [Mobile Chrome] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: /Real-Time Status/i })[22m
+    [2m    - locator resolved to <a href="/real-time-status" class="flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-50">…</a>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    13 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      59 |   test('should display real-time status', async ({ page }) => {
+      60 |     // Click on Real-Time Status link - use getByRole which is more mobile-friendly
+    > 61 |     await page.getByRole('link', { name: /Real-Time Status/i }).click();
+         |                                                                 ^
+      62 |
+      63 |     // Verify navigation
+      64 |     await page.waitForURL('**/real-time-status');
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:61:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-display-real-time-status-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-display-real-time-status-Mobile-Chrome\error-context.md
+
+  8) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    16 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--93013-ld-display-work-orders-list-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--93013-ld-display-work-orders-list-Mobile-Chrome\error-context.md
+
+  9) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    17 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--b63d0-pen-create-work-order-modal-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--b63d0-pen-create-work-order-modal-Mobile-Chrome\error-context.md
+
+  10) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    17 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--8320f-ilter-work-orders-by-status-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--8320f-ilter-work-orders-by-status-Mobile-Chrome\error-context.md
+
+  11) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    17 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--f9cc6-splay-work-order-priorities-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--f9cc6-splay-work-order-priorities-Mobile-Chrome\error-context.md
+
+  12) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    17 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--efc47-splay-AUTO-TRIP-work-orders-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--efc47-splay-AUTO-TRIP-work-orders-Mobile-Chrome\error-context.md
+
+  13) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    17 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--f5c4a-andle-work-order-assignment-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--f5c4a-andle-work-order-assignment-Mobile-Chrome\error-context.md
+
+  14) [Mobile Chrome] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    17 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - element is outside of the viewport[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work-Orders-should-logout-successfully-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work-Orders-should-logout-successfully-Mobile-Chrome\error-context.md
+
+  15) [Mobile Safari] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      36 |
+      37 |     // Should have at least one status badge visible
+    > 38 |     expect(badgeCount).toBeGreaterThan(0);
+         |                        ^
+      39 |   });
+      40 |
+      41 |   test('should navigate to assets page', async ({ page }) => {
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:38:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-6171a--badges-with-correct-colors-Mobile-Safari\error-context.md
+
+  16) [Mobile Safari] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: /Assets/i })[22m
+    [2m    - locator resolved to <a href="/assets" class="flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-50">…</a>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    4 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+
+
+      41 |   test('should navigate to assets page', async ({ page }) => {
+      42 |     // Find and click link to assets - use getByRole which is more mobile-friendly
+    > 43 |     await page.getByRole('link', { name: /Assets/i }).click();
+         |                                                       ^
+      44 |
+      45 |     // Verify navigation
+      46 |     await page.waitForURL('**/assets');
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:43:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-navigate-to-assets-page-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-navigate-to-assets-page-Mobile-Safari\error-context.md
+
+  17) [Mobile Safari] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: /Work Orders/i })[22m
+    [2m    - locator resolved to <a href="/work-orders" class="flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-50">…</a>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    3 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+
+
+      50 |   test('should navigate to work orders page', async ({ page }) => {
+      51 |     // Find and click link to work orders - use getByRole which is more mobile-friendly
+    > 52 |     await page.getByRole('link', { name: /Work Orders/i }).click();
+         |                                                            ^
+      53 |
+      54 |     // Verify navigation
+      55 |     await page.waitForURL('**/work-orders');
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:52:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-d7464-avigate-to-work-orders-page-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboa-d7464-avigate-to-work-orders-page-Mobile-Safari\error-context.md
+
+  18) [Mobile Safari] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: /Real-Time Status/i })[22m
+    [2m    - locator resolved to <a href="/real-time-status" class="flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-50">…</a>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    3 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+
+
+      59 |   test('should display real-time status', async ({ page }) => {
+      60 |     // Click on Real-Time Status link - use getByRole which is more mobile-friendly
+    > 61 |     await page.getByRole('link', { name: /Real-Time Status/i }).click();
+         |                                                                 ^
+      62 |
+      63 |     // Verify navigation
+      64 |     await page.waitForURL('**/real-time-status');
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\dashboard.spec.ts:61:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-display-real-time-status-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-dashboard-CMMS-Dashboard-should-display-real-time-status-Mobile-Safari\error-context.md
+
+  19) [Mobile Safari] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    4 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--93013-ld-display-work-orders-list-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--93013-ld-display-work-orders-list-Mobile-Safari\error-context.md
+
+  20) [Mobile Safari] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    4 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--b63d0-pen-create-work-order-modal-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--b63d0-pen-create-work-order-modal-Mobile-Safari\error-context.md
+
+  21) [Mobile Safari] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    4 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--8320f-ilter-work-orders-by-status-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--8320f-ilter-work-orders-by-status-Mobile-Safari\error-context.md
+
+  22) [Mobile Safari] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    4 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--f9cc6-splay-work-order-priorities-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--f9cc6-splay-work-order-priorities-Mobile-Safari\error-context.md
+
+  23) [Mobile Safari] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    5 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--efc47-splay-AUTO-TRIP-work-orders-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--efc47-splay-AUTO-TRIP-work-orders-Mobile-Safari\error-context.md
+
+  24) [Mobile Safari] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    5 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work--f5c4a-andle-work-order-assignment-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work--f5c4a-andle-work-order-assignment-Mobile-Safari\error-context.md
+
+  25) [Mobile Safari] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=Work Orders')[22m
+    [2m    - locator resolved to <span class="text-sm sm:text-base">Work Orders</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    5 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - element is outside of the viewport[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+
+
+      18 |
+      19 |     // Navigate to work orders
+    > 20 |     await page.click('text=Work Orders');
+         |                ^
+      21 |     await page.waitForURL('**/work-orders');
+      22 |   });
+      23 |
+        at C:\Users\Srikar.Tanukula\CMMS\tests\e2e\work-orders.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-reports\artifacts\e2e-work-orders-CMMS-Work-Orders-should-logout-successfully-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-reports\artifacts\e2e-work-orders-CMMS-Work-Orders-should-logout-successfully-Mobile-Safari\error-context.md
+
+  25 failed
+    [chromium] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+    [firefox] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+    [webkit] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+    [Mobile Chrome] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+    [Mobile Chrome] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page 
+    [Mobile Chrome] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page 
+    [Mobile Chrome] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment 
+    [Mobile Chrome] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully 
+    [Mobile Safari] › tests\e2e\dashboard.spec.ts:31:7 › CMMS Dashboard › should display status badges with correct colors 
+    [Mobile Safari] › tests\e2e\dashboard.spec.ts:41:7 › CMMS Dashboard › should navigate to assets page 
+    [Mobile Safari] › tests\e2e\dashboard.spec.ts:50:7 › CMMS Dashboard › should navigate to work orders page 
+    [Mobile Safari] › tests\e2e\dashboard.spec.ts:59:7 › CMMS Dashboard › should display real-time status 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:24:7 › CMMS Work Orders › should display work orders list 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:33:7 › CMMS Work Orders › should open create work order modal 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:47:7 › CMMS Work Orders › should filter work orders by status 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:63:7 › CMMS Work Orders › should display work order priorities 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:77:7 › CMMS Work Orders › should display AUTO-TRIP work orders 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:86:7 › CMMS Work Orders › should handle work order assignment 
+    [Mobile Safari] › tests\e2e\work-orders.spec.ts:100:7 › CMMS Work Orders › should logout successfully 
+  95 passed (3.2m)
+
+[36m  Serving HTML report at http://localhost:50684. Press Ctrl+C to quit.[39m

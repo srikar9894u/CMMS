@@ -18,9 +18,46 @@
       "Bash(npm --version)",
       "Bash(curl:*)",
       "Bash(npm --prefix backend list:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "WebSearch",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm update:*)",
+      "WebFetch(domain:reactbits.dev)",
+      "Bash(cat:*)",
+      "Bash(test:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npm test)",
+      "Bash(tee:*)",
+      "Bash(chmod:*)",
+      "Bash(/dev/null)",
+      "Bash(npm i:*)",
+      "Bash(claude-code --version:*)",
+      "Bash(npm view:*)",
+      "Bash(npm test:*)",
+      "Bash(claude-code doctor:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp list:*)",
+      "Bash(claude mcp get sqlite)",
+      "Bash(claude mcp get filesystem)",
+      "Bash(claude mcp get:*)",
+      "Bash(cmd /c \"npx -y @modelcontextprotocol/server-sqlite --help\")",
+      "Bash(claude mcp remove:*)",
+      "Bash(npm run agents:test:*)",
+      "Bash(npm run agents:status:*)",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__write_file"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "filesystem",
+    "github",
+    "memory",
+    "sqlite"
+  ]
 }

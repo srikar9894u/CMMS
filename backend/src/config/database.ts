@@ -313,6 +313,84 @@ export const initDatabase = () => {
     )
   `);
 
+  // Notification Logs table - stores all sent notifications
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS notification_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      type TEXT NOT NULL CHECK(type IN ('email', 'sms', 'push')),
+      event TEXT NOT NULL,
+      subject TEXT,
+      body TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('sent', 'failed', 'pending')),
+      retry_count INTEGER DEFAULT 0,
+      error_message TEXT,
+      sent_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Notification Preferences table - stores user notification settings
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS notification_preferences (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER UNIQUE NOT NULL,
+      email_work_order_assigned BOOLEAN DEFAULT 1,
+      email_work_order_completed BOOLEAN DEFAULT 1,
+      email_work_order_approved BOOLEAN DEFAULT 1,
+      email_pm_reminder_7days BOOLEAN DEFAULT 1,
+      email_pm_reminder_1day BOOLEAN DEFAULT 1,
+      email_leave_request BOOLEAN DEFAULT 1,
+      email_leave_approved BOOLEAN DEFAULT 1,
+      email_inventory_low BOOLEAN DEFAULT 1,
+      email_daily_digest BOOLEAN DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Email Configuration table - stores SMTP settings (admin only)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS email_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      smtp_host TEXT NOT NULL,
+      smtp_port INTEGER NOT NULL DEFAULT 587,
+      smtp_secure BOOLEAN DEFAULT 0,
+      smtp_username TEXT,
+      smtp_password TEXT,
+      from_email TEXT NOT NULL,
+      from_name TEXT NOT NULL DEFAULT 'CMMS',
+      is_active BOOLEAN DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Attachments table - stores file uploads (photos, PDFs, documents)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS attachments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      work_order_id INTEGER,
+      asset_id INTEGER,
+      inventory_item_id INTEGER,
+      entity_type TEXT NOT NULL CHECK(entity_type IN ('work_order', 'asset', 'inventory')),
+      filename TEXT NOT NULL,
+      original_filename TEXT NOT NULL,
+      file_path TEXT NOT NULL,
+      file_size INTEGER NOT NULL,
+      file_type TEXT NOT NULL,
+      mime_type TEXT,
+      uploaded_by INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (inventory_item_id) REFERENCES inventory(id) ON DELETE CASCADE,
+      FOREIGN KEY (uploaded_by) REFERENCES users(id)
+    )
+  `);
+
   // Create indexes for faster queries
   db.exec(`CREATE INDEX IF NOT EXISTS idx_asset_status_log_asset_time ON asset_status_log(asset_id, timestamp DESC)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_opc_tags_asset ON opc_tags(asset_id)`);
@@ -328,6 +406,14 @@ export const initDatabase = () => {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_trip_feedback_asset ON trip_feedback(asset_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_trip_feedback_status ON trip_feedback(status)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_trip_feedback_created ON trip_feedback(created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notification_logs_user ON notification_logs(user_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notification_logs_status ON notification_logs(status, created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notification_logs_event ON notification_logs(event, created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences(user_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_work_order ON attachments(work_order_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_asset ON attachments(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_inventory ON attachments(inventory_item_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_uploaded_by ON attachments(uploaded_by)`);
 
   // Migration: Add name column to opc_connections if it doesn't exist (for migration from old schema)
   const opcConnColumns = db.prepare("PRAGMA table_info(opc_connections)").all() as any[];
@@ -446,6 +532,21 @@ export const initDatabase = () => {
       db.exec(`ALTER TABLE s7_tags ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
       console.log('Added updated_at column to s7_tags table');
     }
+  }
+
+  // Migration: Add reminder tracking columns to preventive_maintenance table
+  const pmColumns = db.prepare("PRAGMA table_info(preventive_maintenance)").all() as any[];
+  const hasLast7DayReminder = pmColumns.some((col: any) => col.name === 'last_7day_reminder_sent');
+  const hasLast1DayReminder = pmColumns.some((col: any) => col.name === 'last_1day_reminder_sent');
+
+  if (!hasLast7DayReminder) {
+    db.exec(`ALTER TABLE preventive_maintenance ADD COLUMN last_7day_reminder_sent DATETIME`);
+    console.log('Added last_7day_reminder_sent column to preventive_maintenance table');
+  }
+
+  if (!hasLast1DayReminder) {
+    db.exec(`ALTER TABLE preventive_maintenance ADD COLUMN last_1day_reminder_sent DATETIME`);
+    console.log('Added last_1day_reminder_sent column to preventive_maintenance table');
   }
 
   // Create default admin user if users table is empty

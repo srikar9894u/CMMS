@@ -555,8 +555,18 @@ class S7ConnectionManager:
             await db.commit()
 
     async def update_asset_status(self, asset_id: int, status: str, running: Optional[bool], trip: Optional[bool], off: Optional[bool]):
-        """Update asset status in database"""
+        """Update asset status in database and create work order for trips"""
         async with aiosqlite.connect(self.db_path) as db:
+            # Get current asset status before updating
+            async with db.execute("""
+                SELECT real_time_status, name
+                FROM assets
+                WHERE id = ?
+            """, (asset_id,)) as cursor:
+                asset_row = await cursor.fetchone()
+                previous_status = asset_row[0] if asset_row else None
+                asset_name = asset_row[1] if asset_row else f"Asset {asset_id}"
+
             # Update asset real-time status
             await db.execute("""
                 UPDATE assets
@@ -569,6 +579,60 @@ class S7ConnectionManager:
                 INSERT INTO asset_status_log (asset_id, status, running_bit, trip_bit, off_bit, timestamp)
                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             """, (asset_id, status, running, trip, off))
+
+            # AUTO-CREATE WORK ORDER for trip detection
+            # Only create if: 1) status changed to 'trip', 2) previous status was not 'trip'
+            if status == 'trip' and previous_status != 'trip':
+                # Check if there's already an open trip work order for this asset
+                async with db.execute("""
+                    SELECT COUNT(*) FROM work_orders
+                    WHERE asset_id = ?
+                      AND work_type = 'corrective'
+                      AND status IN ('open', 'assigned', 'in_progress')
+                      AND title LIKE 'AUTO-TRIP:%'
+                      AND created_at > datetime('now', '-1 hour')
+                """, (asset_id,)) as cursor:
+                    existing_count = (await cursor.fetchone())[0]
+
+                if existing_count == 0:
+                    # Get admin user for work order reporting
+                    async with db.execute("""
+                        SELECT id FROM users WHERE role = 'admin' LIMIT 1
+                    """) as cursor:
+                        admin_row = await cursor.fetchone()
+                        admin_id = admin_row[0] if admin_row else 1
+
+                    # Create urgent corrective work order
+                    wo_title = f"AUTO-TRIP: {asset_name} - PLC Detected"
+                    wo_description = f"""AUTOMATIC WORK ORDER - PLC TRIP DETECTED
+
+Asset: {asset_name}
+Trip Detected: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Detection Method: S7 PLC Real-Time Monitoring
+
+Trip Status: ACTIVE
+Action Required: Investigate and resolve equipment trip immediately.
+
+This work order was automatically created by the S7 monitoring service when the trip bit was detected from the PLC.
+"""
+
+                    await db.execute("""
+                        INSERT INTO work_orders (
+                            title, description, asset_id, priority, status, work_type,
+                            assigned_to, reported_by, scheduled_date
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                    """, (
+                        wo_title,
+                        wo_description,
+                        asset_id,
+                        'urgent',  # Trips are always urgent
+                        'open',
+                        'corrective',
+                        None,  # Will be assigned by manager
+                        admin_id
+                    ))
+
+                    logger.info(f"✅ AUTO-CREATED WORK ORDER for trip on asset {asset_name} (ID: {asset_id})")
 
             await db.commit()
 

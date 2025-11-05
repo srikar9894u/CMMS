@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preventive Maintenance Reminder</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">⚙️ PM Reminder</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151; line-height: 1.6;">
+                Hello <strong>{{userName}}</strong>,
+              </p>
+
+              {{#if (eq urgency 'urgent')}}
+              <p style="margin: 0 0 25px 0; font-size: 16px; color: #b91c1c; line-height: 1.6; background-color: #fee2e2; padding: 12px; border-radius: 6px; border-left: 4px solid #dc2626;">
+                <strong>⚠️ URGENT:</strong> This preventive maintenance is due <strong>tomorrow</strong>!
+              </p>
+              {{else}}
+              <p style="margin: 0 0 25px 0; font-size: 16px; color: #374151; line-height: 1.6;">
+                This is a reminder that preventive maintenance is coming up soon.
+              </p>
+              {{/if}}
+
+              <!-- PM Details Card -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px; margin-bottom: 25px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <h2 style="margin: 0 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600;">
+                      {{pmTitle}}
+                    </h2>
+
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 14px; color: #6b7280; width: 140px;">
+                          <strong style="color: #374151;">Asset:</strong>
+                        </td>
+                        <td style="padding: 8px 0; font-size: 14px; color: #1f2937;">
+                          {{assetName}}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 14px; color: #6b7280;">
+                          <strong style="color: #374151;">Due Date:</strong>
+                        </td>
+                        <td style="padding: 8px 0; font-size: 14px;">
+                          <span style="{{#if (eq urgency 'urgent')}}color: #dc2626; font-weight: 600;{{else}}color: #1f2937;{{/if}}">
+                            {{dueDate}}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; font-size: 14px; color: #6b7280;">
+                          <strong style="color: #374151;">Days Until Due:</strong>
+                        </td>
+                        <td style="padding: 8px 0; font-size: 14px;">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
+                          {{#if (eq urgency 'urgent')}}background-color: #fee2e2; color: #991b1b;{{else}}background-color: #fef3c7; color: #92400e;{{/if}}">
+                            {{daysUntilDue}} day{{#if (gt daysUntilDue 1)}}s{{/if}}
+                          </span>
+                        </td>
+                      </tr>
+                      {{#if description}}
+                      <tr>
+                        <td colspan="2" style="padding-top: 15px;">
+                          <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                            <strong style="color: #374151;">Description:</strong><br>
+                            {{description}}
+                          </p>
+                        </td>
+                      </tr>
+                      {{/if}}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 25px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{pmUrl}}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">
+                      View PM Schedule
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                Please ensure this preventive maintenance is completed on time to maintain asset reliability and prevent unexpected breakdowns.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 20px 30px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; font-size: 12px; color: #9ca3af; text-align: center; line-height: 1.5;">
+                This is an automated notification from your CMMS system.<br>
+                To manage your notification preferences, visit your account settings.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

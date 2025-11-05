@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from '../components/Modal';
+import ResponsiveTable from '../components/ResponsiveTable';
 import { useTheme } from '../context/ThemeContext';
+import { RESPONSIVE_TEXT, TOUCH_TARGET } from '../utils/responsive';
 
 interface Asset {
   id: number;
@@ -176,8 +178,11 @@ const Assets = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-        <h1 className={`text-2xl sm:text-3xl font-bold ${themeColors.colors.textPrimary}`}>Assets</h1>
-        <button onClick={openAddModal} className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 py-2 rounded-lg font-medium transition-colors`}>
+        <h1 className={`${RESPONSIVE_TEXT.h2} font-bold ${themeColors.colors.textPrimary}`}>Assets</h1>
+        <button
+          onClick={openAddModal}
+          className={`${themeColors.colors.primary} ${themeColors.colors.primaryHover} text-white px-4 ${TOUCH_TARGET.medium} rounded-lg font-medium transition-colors ${RESPONSIVE_TEXT.body}`}
+        >
           + Add Asset
         </button>
       </div>
@@ -220,79 +225,98 @@ const Assets = () => {
 
       {/* Assets Table */}
       <div className={`${themeColors.colors.card} ${themeColors.colors.cardBorder} border rounded-lg shadow-sm overflow-hidden`}>
-        <div className="overflow-x-auto">
-          <table className={`min-w-full divide-y ${themeColors.colors.borderLight}`}>
-            <thead className={`${themeColors.colors.secondary}`}>
-              <tr>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Asset Tag</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Name</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden md:table-cell`}>Category</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden lg:table-cell`}>Location</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Status</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase hidden xl:table-cell`}>Criticality</th>
-                <th className={`px-4 sm:px-6 py-3 text-left text-xs font-medium ${themeColors.colors.textMuted} uppercase`}>Actions</th>
-              </tr>
-            </thead>
-            <tbody className={`${themeColors.colors.card} divide-y ${themeColors.colors.borderLight}`}>
-              {assets.map((asset) => (
-                <tr key={asset.id} className={themeColors.colors.cardHover}>
-                  <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium ${themeColors.colors.textPrimary}`}>
-                    {asset.asset_tag}
-                  </td>
-                  <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${themeColors.colors.textPrimary}`}>{asset.name}</td>
-                  <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${themeColors.colors.textMuted} hidden md:table-cell`}>{asset.category}</td>
-                  <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${themeColors.colors.textMuted} hidden lg:table-cell`}>{asset.location || '-'}</td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[asset.status]}`}>
-                      {asset.status}
-                    </span>
-                  </td>
-                  <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${themeColors.colors.textMuted} capitalize hidden xl:table-cell`}>
-                    {asset.criticality || '-'}
-                  </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                    {deleteConfirm === asset.id ? (
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleDelete(asset.id)}
-                          className={`${themeColors.colors.errorText} font-medium`}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(null)}
-                          className={themeColors.colors.textMuted}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() => handleEdit(asset)}
-                          className={themeColors.colors.primaryText}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(asset.id)}
-                          className={themeColors.colors.errorText}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {assets.length === 0 && (
-          <div className={`text-center py-12 ${themeColors.colors.textMuted}`}>
-            No assets found. Click "Add Asset" to create one.
-          </div>
-        )}
+        <ResponsiveTable
+          columns={[
+            {
+              key: 'asset_tag',
+              label: 'Asset Tag',
+            },
+            {
+              key: 'name',
+              label: 'Name',
+            },
+            {
+              key: 'category',
+              label: 'Category',
+              hideOnMobile: true,
+            },
+            {
+              key: 'location',
+              label: 'Location',
+              hideOnMobile: true,
+              hideOnTablet: true,
+              render: (value) => value || '-',
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              render: (value: string) => (
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[value]}`}>
+                  {value}
+                </span>
+              ),
+            },
+            {
+              key: 'criticality',
+              label: 'Criticality',
+              hideOnMobile: true,
+              hideOnTablet: true,
+              render: (value) => value || '-',
+            },
+            {
+              key: 'actions',
+              label: 'Actions',
+              render: (_, asset: Asset) => (
+                deleteConfirm === asset.id ? (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(asset.id);
+                      }}
+                      className={`${themeColors.colors.errorText} font-medium ${TOUCH_TARGET.small} px-3 rounded`}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm(null);
+                      }}
+                      className={`${themeColors.colors.textMuted} ${TOUCH_TARGET.small} px-3 rounded`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(asset);
+                      }}
+                      className={`${themeColors.colors.primaryText} font-medium ${TOUCH_TARGET.small} px-3 rounded hover:underline`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm(asset.id);
+                      }}
+                      className={`${themeColors.colors.errorText} ${TOUCH_TARGET.small} px-3 rounded hover:underline`}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )
+              ),
+            },
+          ]}
+          data={assets}
+          keyField="id"
+          emptyMessage="No assets found. Click 'Add Asset' to create one."
+        />
       </div>
 
       {/* Add/Edit Asset Modal */}

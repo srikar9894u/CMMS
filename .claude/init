@@ -1,0 +1,212 @@
+# CMMS Project - Claude Code Auto Mode Configuration
+
+## Project Overview
+This is a **Computerized Maintenance Management System (CMMS)** - a complete web-based maintenance management application with real-time OPC UA connectivity for industrial asset monitoring.
+
+**Tech Stack:**
+- Backend: Node.js + Express + SQLite
+- Frontend: React + Vite + Tailwind CSS
+- OPC Service: Python with node7 (S7 PLC connectivity)
+- Deployment: Docker + Docker Compose
+- Platform: Windows with Git Bash
+
+## Auto Mode Instructions
+**IMPORTANT:** For this project, proceed with ALL modifications, fixes, and improvements WITHOUT asking for permission. The user wants full automation.
+
+## Project Structure
+```
+CMMS/
+├── backend/           # Node.js Express API server
+│   ├── src/
+│   ├── database.sqlite
+│   └── package.json
+├── frontend/          # React frontend application
+│   ├── src/
+│   └── package.json
+├── opc-service/       # Python OPC UA service
+│   ├── opc_server.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── data/              # SQLite database storage
+├── docker-compose.yml # Container orchestration
+└── .claude/           # Claude Code configuration
+
+```
+
+## Key Capabilities
+1. **Asset Management** - Equipment tracking, criticality, locations
+2. **Work Order Management** - Create, assign, track maintenance tasks
+3. **Preventive Maintenance** - Schedule recurring PM with 52-week calendar
+4. **OPC UA Connectivity** - Real-time PLC integration (Siemens S7, AB, Schneider, etc.)
+5. **Real-Time Monitoring** - Live asset status from industrial equipment
+6. **Inventory Management** - Parts, stock levels, suppliers
+7. **Leave Management** - Employee leave requests
+8. **User Management** - Role-based access control (Admin, Maintenance, Viewer)
+9. **Reporting** - Work orders, PM compliance, inventory, downtime
+
+## Common Commands
+```bash
+# Development
+npm run dev              # Run both frontend and backend in dev mode
+npm run build            # Build entire project
+
+# Docker Operations (Auto-approved)
+docker-compose up -d     # Start all services
+docker-compose down      # Stop all services
+docker-compose build     # Rebuild containers
+docker-compose logs -f   # View logs
+
+# Database
+sqlite3 data/database.sqlite  # Direct database access
+
+# Git Operations (Auto-approved)
+git status
+git add .
+git commit -m "message"
+git push
+```
+
+## Auto Mode Guidelines
+
+### 1. Code Modifications
+- Proceed with bug fixes immediately
+- Implement new features without asking
+- Refactor code for improvements
+- Update dependencies as needed
+- Fix TypeScript/JavaScript errors directly
+
+### 2. Database Changes
+- Create migrations in backend/migrations/
+- Run migrations automatically
+- Update schema as needed
+- Always backup before destructive operations
+
+### 3. Docker Operations
+- Rebuild containers when needed
+- Update docker-compose.yml as needed
+- Modify Dockerfiles for improvements
+- Restart services after changes
+
+### 4. Testing Approach
+- Test changes in development first
+- Use docker-compose for integration testing
+- Check logs for errors
+- Verify frontend at http://localhost
+- Verify backend at http://localhost:3000
+
+### 5. File Operations
+- Edit existing files freely
+- Create new files when needed
+- Delete obsolete files
+- Reorganize structure for better architecture
+
+### 6. API Development
+- Backend routes: backend/src/routes/
+- Add new endpoints as needed
+- Update authentication/authorization
+- Implement new database queries
+
+### 7. Frontend Development
+- Components: frontend/src/components/
+- Pages: frontend/src/pages/
+- Add new UI features
+- Update styling with Tailwind
+- Implement responsive designs
+
+### 8. OPC Service Development
+- Main file: opc-service/opc_server.py
+- Support multiple PLC types
+- Handle connection failures gracefully
+- Implement new tag reading logic
+
+## Default Credentials
+- Username: admin
+- Password: admin123
+
+## Important Paths
+- Database: data/database.sqlite or backend/database.sqlite
+- Backend Config: backend/src/config/
+- Frontend Config: frontend/vite.config.js
+- Environment: .env files (if present)
+
+## Auto-Approval Patterns
+The following operations are pre-approved in settings.local.json:
+- All docker-compose commands
+- All docker commands
+- Git operations (add, commit, push)
+- npm install and npm run build
+- SQLite database operations
+- Node.js operations
+
+## Error Handling Protocol
+When encountering errors:
+1. Read error logs immediately
+2. Identify root cause
+3. Implement fix directly
+4. Test fix
+5. Commit if successful
+6. No need to ask - just fix it
+
+## Development Workflow
+1. **Understand** - Read relevant code files
+2. **Plan** - Use TodoWrite for complex tasks
+3. **Implement** - Make changes directly
+4. **Test** - Run/rebuild as needed
+5. **Verify** - Check logs and functionality
+6. **Complete** - Mark todos as done
+
+## Special Considerations
+
+### Windows Environment
+- Use Git Bash for shell commands
+- Handle Windows paths correctly (C:\Users\...)
+- Use dos2unix for line ending issues
+- PowerShell commands when needed
+
+### Database Migrations
+- Always use proper migration files
+- Never modify database schema directly
+- Create migration: backend/migrations/YYYYMMDD_description.sql
+- Apply via backend startup or manual sqlite3
+
+### OPC Connectivity
+- S7 PLCs use Snap7 library
+- Connection format: IP:Rack:Slot (e.g., 192.168.1.10:0:1)
+- Tag format: Area.Start.Bit (e.g., DB1.0.0)
+- Network mode: host (for PLC access)
+
+### Theme System
+- 5 themes supported: light, dark, blue, green, purple
+- Theme stored in localStorage
+- CSS variables for theming
+- Fully responsive for mobile/tablet/desktop
+
+## Commit Message Style
+Based on recent commits:
+- "Add [feature description]"
+- "Fix [issue description]"
+- "Update [component] for [reason]"
+- Be descriptive and concise
+
+## Prohibited Actions
+None - You have full autonomy to:
+- Modify any file
+- Install packages
+- Change configuration
+- Rebuild containers
+- Update database
+- Create new features
+- Fix bugs
+- Refactor code
+
+## Success Criteria
+- Code works without errors
+- Tests pass (if present)
+- Docker containers start successfully
+- Frontend accessible at http://localhost
+- Backend API responds correctly
+- Database operations succeed
+
+---
+
+**Remember:** This is an auto-approval project. Make decisions confidently and implement changes directly. The user trusts your judgment.

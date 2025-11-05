@@ -1,0 +1,302 @@
+<testsuites id="" name="" tests="120" failures="0" skipped="0" errors="0" time="147.14250199999998">
+<testsuite name="api\assets.api.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="chromium" tests="6" failures="0" skipped="0" time="1.008" errors="0">
+<testcase name="Assets API › GET /api/assets - should return list of assets" classname="api\assets.api.spec.ts" time="0.262">
+</testcase>
+<testcase name="Assets API › GET /api/assets/:id - should return single asset" classname="api\assets.api.spec.ts" time="0.126">
+</testcase>
+<testcase name="Assets API › GET /api/assets/stats - should return asset statistics" classname="api\assets.api.spec.ts" time="0.217">
+</testcase>
+<testcase name="Assets API › POST /api/assets - should create new asset" classname="api\assets.api.spec.ts" time="0.208">
+</testcase>
+<testcase name="Assets API › PUT /api/assets/:id - should update asset" classname="api\assets.api.spec.ts" time="0.14">
+</testcase>
+<testcase name="Assets API › GET /api/assets - should handle unauthorized request" classname="api\assets.api.spec.ts" time="0.055">
+</testcase>
+</testsuite>
+<testsuite name="e2e\dashboard.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="chromium" tests="7" failures="0" skipped="0" time="29.074" errors="0">
+<testcase name="CMMS Dashboard › should display dashboard statistics" classname="e2e\dashboard.spec.ts" time="5.513">
+</testcase>
+<testcase name="CMMS Dashboard › should display status badges with correct colors" classname="e2e\dashboard.spec.ts" time="4.813">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to assets page" classname="e2e\dashboard.spec.ts" time="4.992">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to work orders page" classname="e2e\dashboard.spec.ts" time="4.895">
+</testcase>
+<testcase name="CMMS Dashboard › should display real-time status" classname="e2e\dashboard.spec.ts" time="2.425">
+</testcase>
+<testcase name="CMMS Dashboard › should handle theme toggle" classname="e2e\dashboard.spec.ts" time="3.639">
+</testcase>
+<testcase name="CMMS Dashboard › should display gradient text on headings" classname="e2e\dashboard.spec.ts" time="2.797">
+</testcase>
+</testsuite>
+<testsuite name="e2e\login.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="chromium" tests="4" failures="0" skipped="0" time="7.4" errors="0">
+<testcase name="CMMS Login › should display login page" classname="e2e\login.spec.ts" time="1.116">
+</testcase>
+<testcase name="CMMS Login › should login with valid credentials" classname="e2e\login.spec.ts" time="2.947">
+</testcase>
+<testcase name="CMMS Login › should show error with invalid credentials" classname="e2e\login.spec.ts" time="1.847">
+</testcase>
+<testcase name="CMMS Login › should not allow empty credentials" classname="e2e\login.spec.ts" time="1.49">
+</testcase>
+</testsuite>
+<testsuite name="e2e\work-orders.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="chromium" tests="7" failures="0" skipped="0" time="18.338" errors="0">
+<testcase name="CMMS Work Orders › should display work orders list" classname="e2e\work-orders.spec.ts" time="3.391">
+</testcase>
+<testcase name="CMMS Work Orders › should open create work order modal" classname="e2e\work-orders.spec.ts" time="2.651">
+</testcase>
+<testcase name="CMMS Work Orders › should filter work orders by status" classname="e2e\work-orders.spec.ts" time="2.191">
+</testcase>
+<testcase name="CMMS Work Orders › should display work order priorities" classname="e2e\work-orders.spec.ts" time="2.745">
+</testcase>
+<testcase name="CMMS Work Orders › should display AUTO-TRIP work orders" classname="e2e\work-orders.spec.ts" time="2.27">
+<system-out>
+<![CDATA[Found 0 AUTO-TRIP work orders
+]]>
+</system-out>
+</testcase>
+<testcase name="CMMS Work Orders › should handle work order assignment" classname="e2e\work-orders.spec.ts" time="2.286">
+</testcase>
+<testcase name="CMMS Work Orders › should logout successfully" classname="e2e\work-orders.spec.ts" time="2.804">
+</testcase>
+</testsuite>
+<testsuite name="api\assets.api.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="firefox" tests="6" failures="0" skipped="0" time="0.536" errors="0">
+<testcase name="Assets API › GET /api/assets - should return list of assets" classname="api\assets.api.spec.ts" time="0.061">
+</testcase>
+<testcase name="Assets API › GET /api/assets/:id - should return single asset" classname="api\assets.api.spec.ts" time="0.057">
+</testcase>
+<testcase name="Assets API › GET /api/assets/stats - should return asset statistics" classname="api\assets.api.spec.ts" time="0.181">
+</testcase>
+<testcase name="Assets API › POST /api/assets - should create new asset" classname="api\assets.api.spec.ts" time="0.055">
+</testcase>
+<testcase name="Assets API › PUT /api/assets/:id - should update asset" classname="api\assets.api.spec.ts" time="0.147">
+</testcase>
+<testcase name="Assets API › GET /api/assets - should handle unauthorized request" classname="api\assets.api.spec.ts" time="0.035">
+</testcase>
+</testsuite>
+<testsuite name="e2e\dashboard.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="firefox" tests="7" failures="0" skipped="0" time="102.28" errors="0">
+<testcase name="CMMS Dashboard › should display dashboard statistics" classname="e2e\dashboard.spec.ts" time="16.055">
+</testcase>
+<testcase name="CMMS Dashboard › should display status badges with correct colors" classname="e2e\dashboard.spec.ts" time="17.629">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to assets page" classname="e2e\dashboard.spec.ts" time="18.453">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to work orders page" classname="e2e\dashboard.spec.ts" time="17.074">
+</testcase>
+<testcase name="CMMS Dashboard › should display real-time status" classname="e2e\dashboard.spec.ts" time="11.235">
+</testcase>
+<testcase name="CMMS Dashboard › should handle theme toggle" classname="e2e\dashboard.spec.ts" time="12.988">
+</testcase>
+<testcase name="CMMS Dashboard › should display gradient text on headings" classname="e2e\dashboard.spec.ts" time="8.846">
+</testcase>
+</testsuite>
+<testsuite name="e2e\login.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="firefox" tests="4" failures="0" skipped="0" time="21.725" errors="0">
+<testcase name="CMMS Login › should display login page" classname="e2e\login.spec.ts" time="5.604">
+</testcase>
+<testcase name="CMMS Login › should login with valid credentials" classname="e2e\login.spec.ts" time="6.785">
+</testcase>
+<testcase name="CMMS Login › should show error with invalid credentials" classname="e2e\login.spec.ts" time="5.011">
+</testcase>
+<testcase name="CMMS Login › should not allow empty credentials" classname="e2e\login.spec.ts" time="4.325">
+</testcase>
+</testsuite>
+<testsuite name="e2e\work-orders.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="firefox" tests="7" failures="0" skipped="0" time="48.783" errors="0">
+<testcase name="CMMS Work Orders › should display work orders list" classname="e2e\work-orders.spec.ts" time="8.783">
+</testcase>
+<testcase name="CMMS Work Orders › should open create work order modal" classname="e2e\work-orders.spec.ts" time="7.009">
+</testcase>
+<testcase name="CMMS Work Orders › should filter work orders by status" classname="e2e\work-orders.spec.ts" time="7.218">
+</testcase>
+<testcase name="CMMS Work Orders › should display work order priorities" classname="e2e\work-orders.spec.ts" time="7.437">
+</testcase>
+<testcase name="CMMS Work Orders › should display AUTO-TRIP work orders" classname="e2e\work-orders.spec.ts" time="6.391">
+<system-out>
+<![CDATA[Found 0 AUTO-TRIP work orders
+]]>
+</system-out>
+</testcase>
+<testcase name="CMMS Work Orders › should handle work order assignment" classname="e2e\work-orders.spec.ts" time="6.691">
+</testcase>
+<testcase name="CMMS Work Orders › should logout successfully" classname="e2e\work-orders.spec.ts" time="5.254">
+</testcase>
+</testsuite>
+<testsuite name="api\assets.api.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="webkit" tests="6" failures="0" skipped="0" time="1.375" errors="0">
+<testcase name="Assets API › GET /api/assets - should return list of assets" classname="api\assets.api.spec.ts" time="0.338">
+</testcase>
+<testcase name="Assets API › GET /api/assets/:id - should return single asset" classname="api\assets.api.spec.ts" time="0.108">
+</testcase>
+<testcase name="Assets API › GET /api/assets/stats - should return asset statistics" classname="api\assets.api.spec.ts" time="0.485">
+</testcase>
+<testcase name="Assets API › POST /api/assets - should create new asset" classname="api\assets.api.spec.ts" time="0.27">
+</testcase>
+<testcase name="Assets API › PUT /api/assets/:id - should update asset" classname="api\assets.api.spec.ts" time="0.099">
+</testcase>
+<testcase name="Assets API › GET /api/assets - should handle unauthorized request" classname="api\assets.api.spec.ts" time="0.075">
+</testcase>
+</testsuite>
+<testsuite name="e2e\dashboard.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="webkit" tests="7" failures="0" skipped="0" time="48.151" errors="0">
+<testcase name="CMMS Dashboard › should display dashboard statistics" classname="e2e\dashboard.spec.ts" time="6.629">
+</testcase>
+<testcase name="CMMS Dashboard › should display status badges with correct colors" classname="e2e\dashboard.spec.ts" time="6.53">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to assets page" classname="e2e\dashboard.spec.ts" time="8.616">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to work orders page" classname="e2e\dashboard.spec.ts" time="8.091">
+</testcase>
+<testcase name="CMMS Dashboard › should display real-time status" classname="e2e\dashboard.spec.ts" time="6.347">
+</testcase>
+<testcase name="CMMS Dashboard › should handle theme toggle" classname="e2e\dashboard.spec.ts" time="8.163">
+</testcase>
+<testcase name="CMMS Dashboard › should display gradient text on headings" classname="e2e\dashboard.spec.ts" time="3.775">
+</testcase>
+</testsuite>
+<testsuite name="e2e\login.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="webkit" tests="4" failures="0" skipped="0" time="11.905" errors="0">
+<testcase name="CMMS Login › should display login page" classname="e2e\login.spec.ts" time="2.35">
+</testcase>
+<testcase name="CMMS Login › should login with valid credentials" classname="e2e\login.spec.ts" time="3.764">
+</testcase>
+<testcase name="CMMS Login › should show error with invalid credentials" classname="e2e\login.spec.ts" time="3.157">
+</testcase>
+<testcase name="CMMS Login › should not allow empty credentials" classname="e2e\login.spec.ts" time="2.634">
+</testcase>
+</testsuite>
+<testsuite name="e2e\work-orders.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="webkit" tests="7" failures="0" skipped="0" time="39.479" errors="0">
+<testcase name="CMMS Work Orders › should display work orders list" classname="e2e\work-orders.spec.ts" time="5.464">
+</testcase>
+<testcase name="CMMS Work Orders › should open create work order modal" classname="e2e\work-orders.spec.ts" time="5.509">
+</testcase>
+<testcase name="CMMS Work Orders › should filter work orders by status" classname="e2e\work-orders.spec.ts" time="5.718">
+</testcase>
+<testcase name="CMMS Work Orders › should display work order priorities" classname="e2e\work-orders.spec.ts" time="6.091">
+</testcase>
+<testcase name="CMMS Work Orders › should display AUTO-TRIP work orders" classname="e2e\work-orders.spec.ts" time="5.182">
+<system-out>
+<![CDATA[Found 0 AUTO-TRIP work orders
+]]>
+</system-out>
+</testcase>
+<testcase name="CMMS Work Orders › should handle work order assignment" classname="e2e\work-orders.spec.ts" time="5.46">
+</testcase>
+<testcase name="CMMS Work Orders › should logout successfully" classname="e2e\work-orders.spec.ts" time="6.055">
+</testcase>
+</testsuite>
+<testsuite name="api\assets.api.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Chrome" tests="6" failures="0" skipped="0" time="0.574" errors="0">
+<testcase name="Assets API › GET /api/assets - should return list of assets" classname="api\assets.api.spec.ts" time="0.075">
+</testcase>
+<testcase name="Assets API › GET /api/assets/:id - should return single asset" classname="api\assets.api.spec.ts" time="0.046">
+</testcase>
+<testcase name="Assets API › GET /api/assets/stats - should return asset statistics" classname="api\assets.api.spec.ts" time="0.256">
+</testcase>
+<testcase name="Assets API › POST /api/assets - should create new asset" classname="api\assets.api.spec.ts" time="0.077">
+</testcase>
+<testcase name="Assets API › PUT /api/assets/:id - should update asset" classname="api\assets.api.spec.ts" time="0.079">
+</testcase>
+<testcase name="Assets API › GET /api/assets - should handle unauthorized request" classname="api\assets.api.spec.ts" time="0.041">
+</testcase>
+</testsuite>
+<testsuite name="e2e\dashboard.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Chrome" tests="7" failures="0" skipped="0" time="21.659" errors="0">
+<testcase name="CMMS Dashboard › should display dashboard statistics" classname="e2e\dashboard.spec.ts" time="2.96">
+</testcase>
+<testcase name="CMMS Dashboard › should display status badges with correct colors" classname="e2e\dashboard.spec.ts" time="3.088">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to assets page" classname="e2e\dashboard.spec.ts" time="3.453">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to work orders page" classname="e2e\dashboard.spec.ts" time="3.349">
+</testcase>
+<testcase name="CMMS Dashboard › should display real-time status" classname="e2e\dashboard.spec.ts" time="2.986">
+</testcase>
+<testcase name="CMMS Dashboard › should handle theme toggle" classname="e2e\dashboard.spec.ts" time="3.268">
+</testcase>
+<testcase name="CMMS Dashboard › should display gradient text on headings" classname="e2e\dashboard.spec.ts" time="2.555">
+</testcase>
+</testsuite>
+<testsuite name="e2e\login.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="0" time="7.458" errors="0">
+<testcase name="CMMS Login › should display login page" classname="e2e\login.spec.ts" time="1.435">
+</testcase>
+<testcase name="CMMS Login › should login with valid credentials" classname="e2e\login.spec.ts" time="2.437">
+</testcase>
+<testcase name="CMMS Login › should show error with invalid credentials" classname="e2e\login.spec.ts" time="1.869">
+</testcase>
+<testcase name="CMMS Login › should not allow empty credentials" classname="e2e\login.spec.ts" time="1.717">
+</testcase>
+</testsuite>
+<testsuite name="e2e\work-orders.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Chrome" tests="7" failures="0" skipped="0" time="14.91" errors="0">
+<testcase name="CMMS Work Orders › should display work orders list" classname="e2e\work-orders.spec.ts" time="2.908">
+</testcase>
+<testcase name="CMMS Work Orders › should open create work order modal" classname="e2e\work-orders.spec.ts" time="1.988">
+</testcase>
+<testcase name="CMMS Work Orders › should filter work orders by status" classname="e2e\work-orders.spec.ts" time="2.078">
+</testcase>
+<testcase name="CMMS Work Orders › should display work order priorities" classname="e2e\work-orders.spec.ts" time="2.007">
+</testcase>
+<testcase name="CMMS Work Orders › should display AUTO-TRIP work orders" classname="e2e\work-orders.spec.ts" time="1.901">
+<system-out>
+<![CDATA[Found 0 AUTO-TRIP work orders
+]]>
+</system-out>
+</testcase>
+<testcase name="CMMS Work Orders › should handle work order assignment" classname="e2e\work-orders.spec.ts" time="1.736">
+</testcase>
+<testcase name="CMMS Work Orders › should logout successfully" classname="e2e\work-orders.spec.ts" time="2.292">
+</testcase>
+</testsuite>
+<testsuite name="api\assets.api.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Safari" tests="6" failures="0" skipped="0" time="1.144" errors="0">
+<testcase name="Assets API › GET /api/assets - should return list of assets" classname="api\assets.api.spec.ts" time="0.316">
+</testcase>
+<testcase name="Assets API › GET /api/assets/:id - should return single asset" classname="api\assets.api.spec.ts" time="0.259">
+</testcase>
+<testcase name="Assets API › GET /api/assets/stats - should return asset statistics" classname="api\assets.api.spec.ts" time="0.292">
+</testcase>
+<testcase name="Assets API › POST /api/assets - should create new asset" classname="api\assets.api.spec.ts" time="0.12">
+</testcase>
+<testcase name="Assets API › PUT /api/assets/:id - should update asset" classname="api\assets.api.spec.ts" time="0.105">
+</testcase>
+<testcase name="Assets API › GET /api/assets - should handle unauthorized request" classname="api\assets.api.spec.ts" time="0.052">
+</testcase>
+</testsuite>
+<testsuite name="e2e\dashboard.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Safari" tests="7" failures="0" skipped="0" time="34.584" errors="0">
+<testcase name="CMMS Dashboard › should display dashboard statistics" classname="e2e\dashboard.spec.ts" time="5.52">
+</testcase>
+<testcase name="CMMS Dashboard › should display status badges with correct colors" classname="e2e\dashboard.spec.ts" time="5.289">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to assets page" classname="e2e\dashboard.spec.ts" time="6.032">
+</testcase>
+<testcase name="CMMS Dashboard › should navigate to work orders page" classname="e2e\dashboard.spec.ts" time="5.392">
+</testcase>
+<testcase name="CMMS Dashboard › should display real-time status" classname="e2e\dashboard.spec.ts" time="5.053">
+</testcase>
+<testcase name="CMMS Dashboard › should handle theme toggle" classname="e2e\dashboard.spec.ts" time="3.525">
+</testcase>
+<testcase name="CMMS Dashboard › should display gradient text on headings" classname="e2e\dashboard.spec.ts" time="3.773">
+</testcase>
+</testsuite>
+<testsuite name="e2e\login.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Safari" tests="4" failures="0" skipped="0" time="11.083" errors="0">
+<testcase name="CMMS Login › should display login page" classname="e2e\login.spec.ts" time="2.069">
+</testcase>
+<testcase name="CMMS Login › should login with valid credentials" classname="e2e\login.spec.ts" time="3.571">
+</testcase>
+<testcase name="CMMS Login › should show error with invalid credentials" classname="e2e\login.spec.ts" time="2.944">
+</testcase>
+<testcase name="CMMS Login › should not allow empty credentials" classname="e2e\login.spec.ts" time="2.499">
+</testcase>
+</testsuite>
+<testsuite name="e2e\work-orders.spec.ts" timestamp="2025-11-05T04:56:16.761Z" hostname="Mobile Safari" tests="7" failures="0" skipped="0" time="26.156" errors="0">
+<testcase name="CMMS Work Orders › should display work orders list" classname="e2e\work-orders.spec.ts" time="4.255">
+</testcase>
+<testcase name="CMMS Work Orders › should open create work order modal" classname="e2e\work-orders.spec.ts" time="3.885">
+</testcase>
+<testcase name="CMMS Work Orders › should filter work orders by status" classname="e2e\work-orders.spec.ts" time="4.45">
+</testcase>
+<testcase name="CMMS Work Orders › should display work order priorities" classname="e2e\work-orders.spec.ts" time="4.128">
+</testcase>
+<testcase name="CMMS Work Orders › should display AUTO-TRIP work orders" classname="e2e\work-orders.spec.ts" time="3.418">
+<system-out>
+<![CDATA[Found 0 AUTO-TRIP work orders
+]]>
+</system-out>
+</testcase>
+<testcase name="CMMS Work Orders › should handle work order assignment" classname="e2e\work-orders.spec.ts" time="3.15">
+</testcase>
+<testcase name="CMMS Work Orders › should logout successfully" classname="e2e\work-orders.spec.ts" time="2.87">
+</testcase>
+</testsuite>
+</testsuites>
