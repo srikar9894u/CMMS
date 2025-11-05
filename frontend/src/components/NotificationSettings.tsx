@@ -215,7 +215,7 @@ const NotificationSettings = () => {
                   : 'bg-gray-300'
               }`}
               role="switch"
-              aria-checked={preferences[option.key]}
+              aria-checked={!!preferences[option.key]}
             >
               <span
                 className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
