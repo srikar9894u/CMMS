@@ -4,6 +4,10 @@ import { ThemeConfig, ThemeId } from '../types/theme.types';
 import { industrialProTheme } from '../themes/industrial-pro.theme';
 import { glassmorphicModernTheme } from '../themes/glassmorphic-modern.theme';
 import { compactFieldTheme } from '../themes/compact-field.theme';
+import { neumorphicSoftTheme } from '../themes/neumorphic-soft.theme';
+import { boldBrutalistTheme } from '../themes/bold-brutalist.theme';
+import { dashboardExecutiveTheme } from '../themes/dashboard-executive.theme';
+import { minimalLightTheme } from '../themes/minimal-light.theme';
 
 interface UIEngineContextType {
   currentTheme: ThemeConfig;
@@ -22,11 +26,10 @@ const THEME_REGISTRY: Record<ThemeId, ThemeConfig> = {
   'industrial-pro': industrialProTheme,
   'glassmorphic-modern': glassmorphicModernTheme,
   'compact-field': compactFieldTheme,
-  // Placeholders for future themes
-  'neumorphic-soft': industrialProTheme, // TODO: Implement
-  'bold-brutalist': industrialProTheme, // TODO: Implement
-  'dashboard-executive': industrialProTheme, // TODO: Implement
-  'minimal-light': industrialProTheme, // TODO: Implement
+  'neumorphic-soft': neumorphicSoftTheme,
+  'bold-brutalist': boldBrutalistTheme,
+  'dashboard-executive': dashboardExecutiveTheme,
+  'minimal-light': minimalLightTheme,
 };
 
 export const UIEngineProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -35,11 +38,15 @@ export const UIEngineProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [animationsEnabled, setAnimationsEnabled] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // All available themes (currently only MVP themes)
+  // All available themes
   const availableThemes: ThemeConfig[] = [
     industrialProTheme,
     glassmorphicModernTheme,
     compactFieldTheme,
+    neumorphicSoftTheme,
+    boldBrutalistTheme,
+    dashboardExecutiveTheme,
+    minimalLightTheme,
   ];
 
   // Load theme from backend on mount
