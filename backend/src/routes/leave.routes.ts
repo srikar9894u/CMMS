@@ -103,7 +103,7 @@ router.post(
 
       // Send notification to managers
       const leaveRequest = {
-        id: leaveRequestId,
+        id: Number(leaveRequestId),
         user_id: req.user!.id,
         start_date,
         end_date,
@@ -150,6 +150,7 @@ router.put('/:id/status', roleMiddleware('admin', 'manager'), (req: AuthRequest,
         full_name: req.user!.full_name,
         username: req.user!.username,
         email: req.user!.email,
+        role: req.user!.role,
       };
       const approved = status === 'approved';
       notificationService.notifyLeaveApproved(leaveRequest, approved, approvedBy).catch(err => {

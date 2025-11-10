@@ -36,10 +36,11 @@ class EmailService {
         return;
       }
 
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         host: config.smtp_host,
         port: config.smtp_port,
-        secure: config.smtp_secure,
+        secure: config.smtp_port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
+        requireTLS: config.smtp_secure, // Require TLS upgrade for port 587
         auth: config.smtp_username && config.smtp_password ? {
           user: config.smtp_username,
           pass: config.smtp_password,

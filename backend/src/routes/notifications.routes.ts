@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate, authorize } from '../middleware/auth';
+import { authMiddleware, roleMiddleware } from '../middleware/auth';
 import {
   getNotificationPreferences,
   updateNotificationPreferences,
@@ -13,18 +13,18 @@ import {
 const router = express.Router();
 
 // User notification preferences
-router.get('/preferences', authenticate, getNotificationPreferences);
-router.put('/preferences', authenticate, updateNotificationPreferences);
+router.get('/preferences', authMiddleware, getNotificationPreferences);
+router.put('/preferences', authMiddleware, updateNotificationPreferences);
 
 // Notification history
-router.get('/history', authenticate, getNotificationHistory);
+router.get('/history', authMiddleware, getNotificationHistory);
 
 // Test notification (Admin only)
-router.post('/test', authenticate, authorize(['admin']), sendTestNotification);
+router.post('/test', authMiddleware, roleMiddleware('admin'), sendTestNotification);
 
 // Email configuration (Admin only)
-router.get('/email-config', authenticate, authorize(['admin']), getEmailConfiguration);
-router.post('/email-config', authenticate, authorize(['admin']), saveEmailConfiguration);
-router.post('/email-config/test', authenticate, authorize(['admin']), testEmailConfiguration);
+router.get('/email-config', authMiddleware, roleMiddleware('admin'), getEmailConfiguration);
+router.post('/email-config', authMiddleware, roleMiddleware('admin'), saveEmailConfiguration);
+router.post('/email-config/test', authMiddleware, roleMiddleware('admin'), testEmailConfiguration);
 
 export default router;

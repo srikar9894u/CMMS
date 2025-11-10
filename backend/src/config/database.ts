@@ -368,6 +368,149 @@ export const initDatabase = () => {
     )
   `);
 
+  // Root Cause Analysis table - stores RCA investigations
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS root_cause_analysis (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      work_order_id INTEGER,
+      asset_id INTEGER,
+      trip_feedback_id INTEGER,
+      analysis_method TEXT NOT NULL CHECK(analysis_method IN ('fishbone', 'five_whys', 'pareto', 'fault_tree', 'fmea', 'combined')),
+      severity TEXT NOT NULL CHECK(severity IN ('low', 'medium', 'high', 'critical')),
+      status TEXT NOT NULL DEFAULT 'initiated' CHECK(status IN ('initiated', 'investigating', 'analysis_complete', 'actions_defined', 'approved', 'closed')),
+      incident_date DATETIME,
+      initiated_by INTEGER NOT NULL,
+      assigned_to INTEGER,
+      specialist_type TEXT CHECK(specialist_type IN ('electrical', 'mechanical', 'both', NULL)),
+      immediate_cause TEXT,
+      root_cause TEXT,
+      contributing_factors TEXT,
+      estimated_cost_impact REAL,
+      actual_cost_impact REAL,
+      recurrence_risk TEXT CHECK(recurrence_risk IN ('low', 'medium', 'high', 'very_high')),
+      approved_by INTEGER,
+      approved_at DATETIME,
+      closed_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE SET NULL,
+      FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (trip_feedback_id) REFERENCES trip_feedback(id) ON DELETE SET NULL,
+      FOREIGN KEY (initiated_by) REFERENCES users(id),
+      FOREIGN KEY (assigned_to) REFERENCES users(id),
+      FOREIGN KEY (approved_by) REFERENCES users(id)
+    )
+  `);
+
+  // RCA Fishbone Data table - stores cause categories for Fishbone/Ishikawa diagrams
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS rca_fishbone_data (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rca_id INTEGER NOT NULL,
+      category TEXT NOT NULL CHECK(category IN ('man', 'machine', 'method', 'material', 'measurement', 'environment')),
+      cause TEXT NOT NULL,
+      sub_causes TEXT,
+      severity INTEGER DEFAULT 1 CHECK(severity BETWEEN 1 AND 5),
+      notes TEXT,
+      created_by INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rca_id) REFERENCES root_cause_analysis(id) ON DELETE CASCADE,
+      FOREIGN KEY (created_by) REFERENCES users(id)
+    )
+  `);
+
+  // RCA 5 Whys table - stores iterative why questions and answers
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS rca_five_whys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rca_id INTEGER NOT NULL,
+      why_level INTEGER NOT NULL CHECK(why_level BETWEEN 1 AND 10),
+      question TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      is_root_cause BOOLEAN DEFAULT 0,
+      evidence TEXT,
+      created_by INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rca_id) REFERENCES root_cause_analysis(id) ON DELETE CASCADE,
+      FOREIGN KEY (created_by) REFERENCES users(id)
+    )
+  `);
+
+  // RCA Recommended Actions table - stores corrective and preventive actions
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS rca_recommended_actions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rca_id INTEGER NOT NULL,
+      action_type TEXT NOT NULL CHECK(action_type IN ('immediate', 'corrective', 'preventive', 'monitoring')),
+      description TEXT NOT NULL,
+      priority TEXT NOT NULL CHECK(priority IN ('low', 'medium', 'high', 'critical')),
+      assigned_to INTEGER,
+      due_date DATE,
+      estimated_cost REAL,
+      actual_cost REAL,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'in_progress', 'completed', 'cancelled', 'deferred')),
+      completion_notes TEXT,
+      completed_by INTEGER,
+      completed_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rca_id) REFERENCES root_cause_analysis(id) ON DELETE CASCADE,
+      FOREIGN KEY (assigned_to) REFERENCES users(id),
+      FOREIGN KEY (completed_by) REFERENCES users(id)
+    )
+  `);
+
+  // RCA Timeline table - stores investigation milestones and events
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS rca_timeline (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rca_id INTEGER NOT NULL,
+      event_type TEXT NOT NULL CHECK(event_type IN ('created', 'assigned', 'finding_added', 'cause_identified', 'action_proposed', 'status_changed', 'approved', 'closed', 'comment')),
+      event_title TEXT NOT NULL,
+      event_description TEXT,
+      event_data TEXT,
+      user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rca_id) REFERENCES root_cause_analysis(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Failure Patterns table - tracks recurring failure modes across assets
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS failure_patterns (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pattern_name TEXT NOT NULL,
+      description TEXT,
+      failure_mode TEXT NOT NULL,
+      affected_asset_type TEXT,
+      occurrence_count INTEGER DEFAULT 1,
+      total_downtime_hours REAL DEFAULT 0,
+      total_cost_impact REAL DEFAULT 0,
+      common_root_causes TEXT,
+      recommended_prevention TEXT,
+      last_occurrence DATE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Failure Pattern RCA Link table - links RCAs to failure patterns
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS failure_pattern_rca_link (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      failure_pattern_id INTEGER NOT NULL,
+      rca_id INTEGER NOT NULL,
+      contribution_score INTEGER DEFAULT 1 CHECK(contribution_score BETWEEN 1 AND 5),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (failure_pattern_id) REFERENCES failure_patterns(id) ON DELETE CASCADE,
+      FOREIGN KEY (rca_id) REFERENCES root_cause_analysis(id) ON DELETE CASCADE,
+      UNIQUE(failure_pattern_id, rca_id)
+    )
+  `);
+
   // Attachments table - stores file uploads (photos, PDFs, documents)
   db.exec(`
     CREATE TABLE IF NOT EXISTS attachments (
@@ -375,7 +518,7 @@ export const initDatabase = () => {
       work_order_id INTEGER,
       asset_id INTEGER,
       inventory_item_id INTEGER,
-      entity_type TEXT NOT NULL CHECK(entity_type IN ('work_order', 'asset', 'inventory')),
+      entity_type TEXT NOT NULL CHECK(entity_type IN ('work_order', 'asset', 'inventory', 'rca')),
       filename TEXT NOT NULL,
       original_filename TEXT NOT NULL,
       file_path TEXT NOT NULL,
@@ -414,6 +557,18 @@ export const initDatabase = () => {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_asset ON attachments(asset_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_inventory ON attachments(inventory_item_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_uploaded_by ON attachments(uploaded_by)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_asset ON root_cause_analysis(asset_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_work_order ON root_cause_analysis(work_order_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_status ON root_cause_analysis(status, created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_assigned ON root_cause_analysis(assigned_to)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_fishbone_rca ON rca_fishbone_data(rca_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_five_whys_rca ON rca_five_whys(rca_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_actions_rca ON rca_recommended_actions(rca_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_actions_assigned ON rca_recommended_actions(assigned_to, status)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_rca_timeline_rca ON rca_timeline(rca_id, created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_failure_patterns_mode ON failure_patterns(failure_mode)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_failure_pattern_link_pattern ON failure_pattern_rca_link(failure_pattern_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_failure_pattern_link_rca ON failure_pattern_rca_link(rca_id)`);
 
   // Migration: Add name column to opc_connections if it doesn't exist (for migration from old schema)
   const opcConnColumns = db.prepare("PRAGMA table_info(opc_connections)").all() as any[];
@@ -547,6 +702,16 @@ export const initDatabase = () => {
   if (!hasLast1DayReminder) {
     db.exec(`ALTER TABLE preventive_maintenance ADD COLUMN last_1day_reminder_sent DATETIME`);
     console.log('Added last_1day_reminder_sent column to preventive_maintenance table');
+  }
+
+  // Migration: Add rca_id column to attachments table if it doesn't exist
+  const attachmentsColumns = db.prepare("PRAGMA table_info(attachments)").all() as any[];
+  const hasRcaId = attachmentsColumns.some((col: any) => col.name === 'rca_id');
+
+  if (!hasRcaId) {
+    db.exec(`ALTER TABLE attachments ADD COLUMN rca_id INTEGER REFERENCES root_cause_analysis(id) ON DELETE CASCADE`);
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_attachments_rca ON attachments(rca_id)`);
+    console.log('Added rca_id column to attachments table');
   }
 
   // Create default admin user if users table is empty

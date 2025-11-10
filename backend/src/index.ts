@@ -24,6 +24,7 @@ import tripFeedbackRoutes from './routes/trip-feedback.routes';
 import pmSchedulerRoutes from './routes/pm-scheduler.routes';
 import notificationsRoutes from './routes/notifications.routes';
 import attachmentsRoutes from './routes/attachments.routes';
+import rcaRoutes from './routes/rca.routes';
 
 // Import services
 import { PMSchedulerService } from './services/pm-scheduler.service';
@@ -91,6 +92,7 @@ app.use('/api/trip-feedback', tripFeedbackRoutes);
 app.use('/api/pm-scheduler', pmSchedulerRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/attachments', attachmentsRoutes);
+app.use('/api/rca', rcaRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

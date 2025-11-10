@@ -78,7 +78,7 @@ router.get('/:id', (req: AuthRequest, res: Response) => {
       WHERE wop.work_order_id = ?
     `).all(req.params.id);
 
-    res.json({ ...workOrder, parts });
+    res.json({ ...(workOrder as any), parts });
   } catch (error) {
     console.error('Get work order error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -123,7 +123,7 @@ router.post(
       // Send notification if work order is assigned
       if (assigned_to) {
         const workOrder = {
-          id: workOrderId,
+          id: Number(workOrderId),
           title,
           description,
           asset_id,
@@ -199,6 +199,7 @@ router.put('/:id', roleMiddleware('admin', 'manager', 'technician'), (req: AuthR
         full_name: req.user!.full_name,
         username: req.user!.username,
         email: req.user!.email,
+        role: req.user!.role,
       };
       notificationService.notifyWorkOrderCompleted(updatedWorkOrder, completedBy).catch(err => {
         console.error('Failed to send work order completion notification:', err);

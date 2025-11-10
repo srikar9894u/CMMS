@@ -27,6 +27,8 @@ import TripFeedback from './pages/TripFeedback';
 import TagsManagement from './pages/TagsManagement';
 import PLCConfiguration from './pages/PLCConfiguration';
 import Notifications from './pages/Notifications';
+import RootCauseAnalysis from './pages/RootCauseAnalysis';
+import RCADetail from './pages/RCADetail';
 
 function App() {
   return (
@@ -60,6 +62,8 @@ function App() {
                 <Route path="system-settings" element={<SystemSettings />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="trip-feedback" element={<TripFeedback />} />
+                <Route path="rca" element={<RootCauseAnalysis />} />
+                <Route path="rca/:id" element={<RCADetail />} />
               </Route>
             </Routes>
           </Router>

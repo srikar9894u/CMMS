@@ -44,6 +44,7 @@ const Layout = () => {
     { name: 'Dashboard', path: '/dashboard', icon: '📊' },
     { name: 'Assets', path: '/assets', icon: '🏗️' },
     { name: 'Work Orders', path: '/work-orders', icon: '🔧' },
+    { name: 'Root Cause Analysis', path: '/rca', icon: '🔍' },
     { name: 'Preventive Maintenance', path: '/preventive-maintenance', icon: '⚙️' },
     { name: '52-Week Calendar', path: '/pm-calendar', icon: '📅' },
     { name: 'Inventory', path: '/inventory', icon: '📦' },
