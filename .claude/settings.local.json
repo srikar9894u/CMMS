@@ -54,7 +54,9 @@
       "Bash(tsc:*)",
       "Bash(powershell.exe:*)",
       "Bash(claude doctor:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(timeout 5 du:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []
