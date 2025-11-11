@@ -162,19 +162,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Lint Backend Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: backend/Dockerfile
           failure-threshold: warning
 
       - name: Lint Frontend Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: frontend/Dockerfile
           failure-threshold: warning
 
       - name: Lint OPC Service Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: opc-service/Dockerfile
           failure-threshold: warning
